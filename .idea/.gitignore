@@ -1,3 +1,11 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+/discord.xml
+/family-calendar.iml
+/misc.xml
+/modules.xml
+/pylint.xml
+/vcs.xml
+/inspectionProfiles/profiles_settings.xml

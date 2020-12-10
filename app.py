@@ -46,10 +46,59 @@ class Service:
         return self._sheet_dict
 
 
+class WorkDay:
+    def __init__(self, name, start, end, comment, is_off=False):
+        self.name = name
+        self.start = start
+        self.end = end
+        self.comment = comment
+        self.is_off = is_off
+        self.color = None
+
+
+class WorkDays:
+    work_days = [WorkDay("J", time(8, 30), time(16, 30), "Jour"),
+                 WorkDay("M", time(6, 45), time(14, 15), "Matin"),
+                 WorkDay("S", time(13, 45), time(21, 15), "Soir"),
+                 WorkDay("N", time(21, 0), time(7, 0), "Nuit"),
+                 WorkDay("Jca", time(8, 30), time(16, 30), "Jour modifiable"),
+                 WorkDay("Jrp", time(8, 30), time(16, 30), "Jour modifiable"),
+                 WorkDay("TA", None, None, "Repo recup ?", True),
+                 WorkDay("To", None, None, "Repo recup ?", True),
+                 WorkDay("RF", None, None, "Repo récupération férier", True),
+                 WorkDay("CA", None, None, "Congé Annuel", True),
+                 WorkDay(".CA", None, None, "Congé Annuel ?", True),
+                 WorkDay("Rc", None, None, "Récupération", True),
+                 WorkDay("_", None, None, "comment", True),
+                 WorkDay("", None, None, "comment", True)]
+
+    def get_work_day(self, name):
+        for day in self.work_days:
+            if name == day.name:
+                return day
+        return None
+
+    def get_event(self, ev_date, name, user):
+        day = self.get_work_day(name)
+        if not day.is_off:
+            new_event = Event(
+                summary=day.name,
+                description="{}\n{}".format(user, day.comment),
+                start=datetime.combine(ev_date, day.start),
+                end=datetime.combine(ev_date, day.end),
+                color=day.color,
+                minutes_before_popup_reminder=0
+            )
+            return new_event
+        return None
+
+
 def main():
     # use creds to create a client to interact with the Google Drive API
 
     # Config
+    work_days = WorkDays()
+
     sheet_name = "2021"
     calendar_name = 'famille.catoire.brard@gmail.com'
     users = ["Aurélie", "Aurélie"]
@@ -60,7 +109,8 @@ def main():
 
     # Lets play
     print("Colors?")
-    print(my.calendar.list_event_colors())
+    colors = my.calendar.list_event_colors()
+    print(colors)
 
     print("Delete old events")
     for event in my.calendar:
@@ -74,17 +124,10 @@ def main():
         if element.get("Date") != "":
             element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
             if element_date.month == looked_month:
-                print("{} - {}".format(element.get("Date"), element.get(looked_user)))
-                new_event = Event(
-                    summary=element.get(looked_user),
-                    description="Remarques\n- Parents:\n{}\n- Enfants:\n{}".format(element.get("Parents"),
-                                                                                   element.get("Enfants")),
-                    start=datetime.combine(element_date, time(12)),
-                    end=datetime.combine(element_date, time(13)),
-                    color=None,
-                    minutes_before_popup_reminder=0
-                )
-                my.calendar.add_event(new_event)
+                new_event = work_days.get_event(element_date, element.get(looked_user), looked_user)
+                if new_event:
+                    print("{} - {}".format(element.get("Date"), element.get(looked_user)))
+                    my.calendar.add_event(new_event)
 
     print("Event list")
     for event in my.calendar:
