@@ -47,30 +47,30 @@ class Service:
 
 
 class WorkDay:
-    def __init__(self, name, start, end, comment, is_off=False):
+    def __init__(self, name, start, end, comment, is_off=False, color=None):
         self.name = name
         self.start = start
         self.end = end
         self.comment = comment
         self.is_off = is_off
-        self.color = None
+        self.color = color
 
 
 class WorkDays:
-    work_days = [WorkDay("J", time(8, 30), time(16, 30), "Jour"),
-                 WorkDay("M", time(6, 45), time(14, 15), "Matin"),
-                 WorkDay("S", time(13, 45), time(21, 15), "Soir"),
-                 WorkDay("N", time(21, 0), time(7, 0), "Nuit"),
-                 WorkDay("Jca", time(8, 30), time(16, 30), "Jour modifiable"),
-                 WorkDay("Jrp", time(8, 30), time(16, 30), "Jour modifiable"),
-                 WorkDay("TA", None, None, "Repo recup ?", True),
-                 WorkDay("To", None, None, "Repo recup ?", True),
-                 WorkDay("RF", None, None, "Repo récupération férier", True),
-                 WorkDay("CA", None, None, "Congé Annuel", True),
-                 WorkDay(".CA", None, None, "Congé Annuel ?", True),
-                 WorkDay("Rc", None, None, "Récupération", True),
-                 WorkDay("_", None, None, "comment", True),
-                 WorkDay("", None, None, "comment", True)]
+    work_days = [WorkDay("J", time(8, 30), time(16, 30), "Jour", color=7),
+                 WorkDay("M", time(6, 45), time(14, 15), "Matin", color=1),
+                 WorkDay("S", time(13, 45), time(21, 15), "Soir", color=5),
+                 WorkDay("N", time(21, 0), time(7, 0), "Nuit", color=11),
+                 WorkDay("Jca", time(8, 30), time(16, 30), "Jour modifiable", color=8),
+                 WorkDay("Jrp", time(8, 30), time(16, 30), "Jour modifiable", color=8),
+                 WorkDay("TA", None, None, "Repo recup ?", True, 10),
+                 WorkDay("To", None, None, "Repo recup ?", True, 10),
+                 WorkDay("RF", None, None, "Repo récupération férier", True, 10),
+                 WorkDay("CA", None, None, "Congé Annuel", True, 10),
+                 WorkDay(".CA", None, None, "Congé Annuel ?", True, 10),
+                 WorkDay("Rc", None, None, "Récupération", True, 10),
+                 WorkDay("_", None, None, "comment", True, 10),
+                 WorkDay("", None, None, "comment", True, 10)]
 
     def get_work_day(self, name):
         for day in self.work_days:
@@ -80,28 +80,31 @@ class WorkDays:
 
     def get_event(self, ev_date, name, user):
         day = self.get_work_day(name)
-        if not day.is_off:
-            new_event = Event(
-                summary=day.name,
-                description="{}\n{}".format(user, day.comment),
-                start=datetime.combine(ev_date, day.start),
-                end=datetime.combine(ev_date, day.end),
-                color=day.color,
-                minutes_before_popup_reminder=0
-            )
-            return new_event
-        return None
+
+        # Create timed or a one day event
+        if day.start and day.end:
+            start = datetime.combine(ev_date, day.start)
+            end = datetime.combine(ev_date, day.end)
+        else:
+            start = ev_date
+            end = None
+
+        new_event = Event(
+            summary=day.name,
+            description="{}\n{}".format(user, day.comment),
+            start=start,
+            end=end,
+            color=day.color,
+            minutes_before_popup_reminder=0
+        )
+        return new_event
 
 
 def main():
-    # use creds to create a client to interact with the Google Drive API
-
-    # Config
-    work_days = WorkDays()
 
     sheet_name = "2021"
     calendar_name = 'famille.catoire.brard@gmail.com'
-    users = ["Aurélie", "Aurélie"]
+    users = ["Aurélie", "Axel"]
     looked_user = users[0]
     looked_month = 1
 
@@ -112,6 +115,19 @@ def main():
     colors = my.calendar.list_event_colors()
     print(colors)
 
+    delete_events(my)
+    save_user_days(looked_month, looked_user, my)
+    print_events(my)
+
+
+def print_events(my):
+    print("Event list")
+    for event in my.calendar:
+        # TODO count events
+        print("{}".format(event))
+
+
+def delete_events(my):
     print("Delete old events")
     for event in my.calendar:
         # TODO get email from json
@@ -119,20 +135,27 @@ def main():
             print("Delete : {}".format(event))
             my.calendar.delete_event(event)
 
+
+def save_user_days(looked_month, looked_user, my):
+
+    work_days = WorkDays()
+    event_list = []
+
     print("Looked event")
     for element in my.data:
         if element.get("Date") != "":
             element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
             if element_date.month == looked_month:
                 new_event = work_days.get_event(element_date, element.get(looked_user), looked_user)
-                if new_event:
-                    print("{} - {}".format(element.get("Date"), element.get(looked_user)))
-                    my.calendar.add_event(new_event)
+                event_list.append(new_event)
 
-    print("Event list")
-    for event in my.calendar:
-        # TODO count events
-        print("{}".format(event))
+    # TODO merge continues day off events or create a new big event (need an intermediate WorkDay list?)
+    # for i, event in enumerate(event_list):
+
+    for event in event_list:
+        if event:
+            print("{} - {}".format(event.start, event.summary))
+            my.calendar.add_event(event)
 
 
 main()
