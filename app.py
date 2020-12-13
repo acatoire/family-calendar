@@ -8,8 +8,11 @@ https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-sp
 https://stackoverflow.com/a/64509140/14219576
 https://github.com/kuzmoyev/google-calendar-simple-api
 """
-from datetime import date, datetime, time
+from copy import copy
+from datetime import date, datetime, time, timedelta
+from time import sleep
 
+from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials  # For sheet
 from google.oauth2 import service_account  # For Calendar
 
@@ -46,9 +49,33 @@ class Service:
         return self._sheet_dict
 
 
+def add_events(event_1: Event, event_2: Event):
+
+    work_days = WorkDays()
+    new_event = copy(event_1)
+
+    if work_days.is_off(event_1) and work_days.is_off(event_2):
+
+        if event_1.summary == "OFF":
+            # Already a merged day
+            new_event.description = "{}\n{}-{}".format(event_1.description, event_2.start, event_2.description)
+        else:
+            # First merge
+            new_event.summary = "OFF"
+            new_event.description = "{}-{}\n{}-{}".format(event_1.start, event_1.description,
+                                                          event_2.start, event_2.description)
+        new_event.start = event_1.start
+        new_event.end = event_2.end + timedelta(days=1)
+        new_event.color_id = event_1.color_id
+
+        return new_event
+
+    raise NotImplementedError("You can't add days that are not day off together.")
+
+
 class WorkDay:
-    def __init__(self, name, start, end, comment, is_off=False, color=None):
-        self.name = name
+    def __init__(self, start, end, comment, is_off=False, color=None):
+
         self.start = start
         self.end = end
         self.comment = comment
@@ -57,47 +84,54 @@ class WorkDay:
 
 
 class WorkDays:
-    work_days = [WorkDay("J", time(8, 30), time(16, 30), "Jour", color=7),
-                 WorkDay("M", time(6, 45), time(14, 15), "Matin", color=1),
-                 WorkDay("S", time(13, 45), time(21, 15), "Soir", color=5),
-                 WorkDay("N", time(21, 0), time(7, 0), "Nuit", color=11),
-                 WorkDay("Jca", time(8, 30), time(16, 30), "Jour modifiable", color=8),
-                 WorkDay("Jrp", time(8, 30), time(16, 30), "Jour modifiable", color=8),
-                 WorkDay("TA", None, None, "Repo recup ?", True, 10),
-                 WorkDay("To", None, None, "Repo recup ?", True, 10),
-                 WorkDay("RF", None, None, "Repo récupération férier", True, 10),
-                 WorkDay("CA", None, None, "Congé Annuel", True, 10),
-                 WorkDay(".CA", None, None, "Congé Annuel ?", True, 10),
-                 WorkDay("Rc", None, None, "Récupération", True, 10),
-                 WorkDay("_", None, None, "comment", True, 10),
-                 WorkDay("", None, None, "comment", True, 10)]
+    detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
+              "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
+              "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
+              "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
+              "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
+              "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
+              "TA": WorkDay(None, None, "TA-Repo recup ?", is_off=True, color=10),
+              "To": WorkDay(None, None, "To-Repo recup ?", is_off=True, color=10),
+              "RF": WorkDay(None, None, "RF-Repo récupération férier", is_off=True, color=10),
+              "CA": WorkDay(None, None, "CA-Congé Annuel", is_off=True, color=10),
+              ".CA": WorkDay(None, None, ".CA-Congé Annuel ?", is_off=True, color=10),
+              "Rc": WorkDay(None, None, "Rc-Récupération", is_off=True, color=10),
+              "_": WorkDay(None, None, "_-Weekend", is_off=True, color=10),
+              "": WorkDay(None, None, "Not specified", is_off=True, color=10),
+              "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10)}
 
-    def get_work_day(self, name):
-        for day in self.work_days:
-            if name == day.name:
-                return day
-        return None
+    def get_event(self, ev_date, name):
 
-    def get_event(self, ev_date, name, user):
-        day = self.get_work_day(name)
+        day = self.detail.get(name)
 
         # Create timed or a one day event
         if day.start and day.end:
-            start = datetime.combine(ev_date, day.start)
-            end = datetime.combine(ev_date, day.end)
+            if day.start < day.end:
+                # Normal day timing
+                start = datetime.combine(ev_date, day.start)
+                end = datetime.combine(ev_date, day.end)
+            else:
+                # Work during night
+                start = datetime.combine(ev_date, day.start)
+                end = datetime.combine(ev_date + timedelta(days=1), day.end)
         else:
             start = ev_date
-            end = None
+            end = ev_date
 
         new_event = Event(
-            summary=day.name,
-            description="{}\n{}".format(user, day.comment),
+            summary=name,
+            description="{}".format(day.comment),
             start=start,
             end=end,
             color=day.color,
             minutes_before_popup_reminder=0
         )
         return new_event
+
+    def is_off(self, event):
+
+        day = self.detail.get(event.summary)
+        return day.is_off
 
 
 def main():
@@ -106,7 +140,7 @@ def main():
     calendar_name = 'famille.catoire.brard@gmail.com'
     users = ["Aurélie", "Axel"]
     looked_user = users[0]
-    looked_month = 1
+    looked_month = 0
 
     my = Service(sheet_name, calendar_name)
 
@@ -132,8 +166,15 @@ def delete_events(my):
     for event in my.calendar:
         # TODO get email from json
         if event.other.get("creator").get("email") == "google@family-calendar-298110.iam.gserviceaccount.com":
-            print("Delete : {}".format(event))
-            my.calendar.delete_event(event)
+            try:
+                print("Delete : {}".format(event))
+                my.calendar.delete_event(event)
+            except HttpError:
+                # Manage 403 error: Rate limit exceeded
+                print("Http error, wait before retry")
+                sleep(5)
+                print("Delete : {}".format(event))
+                my.calendar.delete_event(event)
 
 
 def save_user_days(looked_month, looked_user, my):
@@ -145,17 +186,35 @@ def save_user_days(looked_month, looked_user, my):
     for element in my.data:
         if element.get("Date") != "":
             element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
-            if element_date.month == looked_month:
-                new_event = work_days.get_event(element_date, element.get(looked_user), looked_user)
+            if looked_month:
+                # Update only month
+                if element_date.month == looked_month:
+                    new_event = work_days.get_event(element_date, element.get(looked_user))
+                    event_list.append(new_event)
+            else:
+                # Update the whole year
+                new_event = work_days.get_event(element_date, element.get(looked_user))
                 event_list.append(new_event)
 
-    # TODO merge continues day off events or create a new big event (need an intermediate WorkDay list?)
-    # for i, event in enumerate(event_list):
+    # Merge continues day off events
+    i = 0
+    while (i < len(event_list)) and (i < len(event_list) - 1):
+        if work_days.is_off(event_list[i]) and work_days.is_off(event_list[i+1]):
+            event_list[i] = add_events(event_list[i], event_list.pop(i + 1))
+        else:
+            i += 1
 
     for event in event_list:
         if event:
-            print("{} - {}".format(event.start, event.summary))
-            my.calendar.add_event(event)
+            try:
+                print("{} - {}".format(event.start, event.summary))
+                my.calendar.add_event(event)
+            except HttpError:
+                # Manage 403 error: Rate limit exceeded
+                print("Http error, wait before retry")
+                sleep(5)
+                print("{} - {}".format(event.start, event.summary))
+                my.calendar.add_event(event)
 
 
 main()
