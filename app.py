@@ -20,6 +20,8 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
+YEAR = 2021
+
 
 class Service:
     def __init__(self, year: str, calendar_name: str, key_path: str = "client_secret.json", ):
@@ -47,6 +49,68 @@ class Service:
     @property
     def data(self):
         return self._sheet_dict
+
+    def delete_events(self):
+        print("Delete old events")
+
+        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1), time_max=datetime(YEAR, 12, 31), )
+        for event in event_list:
+            # TODO get email from json
+            if event.other.get("creator").get("email") == "google@family-calendar-298110.iam.gserviceaccount.com":
+                try:
+                    print("Delete : {}".format(event))
+                    self.calendar.delete_event(event)
+                except HttpError:
+                    # Manage 403 error: Rate limit exceeded
+                    print("Http error, wait before retry")
+                    sleep(5)
+                    print("Delete : {}".format(event))
+                    self.calendar.delete_event(event)
+
+    def print_events(self):
+        print("Event list")
+        for event in self.calendar:
+            # TODO count events
+            print("{}".format(event))
+
+    def save_user_days(self, looked_month, looked_user):
+
+        work_days = WorkDays()
+        event_list = []
+
+        print("Looked event")
+        for element in self.data:
+            if element.get("Date") != "":
+                element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
+                if looked_month:
+                    # Update only month
+                    if element_date.month == looked_month:
+                        new_event = work_days.get_event(element_date, element.get(looked_user))
+                        event_list.append(new_event)
+                else:
+                    # Update the whole year
+                    new_event = work_days.get_event(element_date, element.get(looked_user))
+                    event_list.append(new_event)
+
+        # Merge continues day off events
+        i = 0
+        while (i < len(event_list)) and (i < len(event_list) - 1):
+            if work_days.is_off(event_list[i]) and work_days.is_off(event_list[i+1]):
+                event_list[i] = add_events(event_list[i], event_list.pop(i + 1))
+            else:
+                i += 1
+
+        for event in event_list:
+            if event:
+                try:
+                    print("{} - {}".format(event.start, event.summary))
+                    self.calendar.add_event(event)
+                except HttpError:
+                    # Manage 403 error: Rate limit exceeded
+                    print("Http error, wait before retry")
+                    sleep(5)
+                    print("{} - {}".format(event.start, event.summary))
+                    self.calendar.add_event(event)
 
 
 def add_events(event_1: Event, event_2: Event):
@@ -144,77 +208,14 @@ def main():
 
     my = Service(sheet_name, calendar_name)
 
-    # Lets play
-    print("Colors?")
-    colors = my.calendar.list_event_colors()
-    print(colors)
+    # For debug
+    # print("Colors?")
+    # colors = my.calendar.list_event_colors()
+    # print(colors)
 
-    delete_events(my)
-    save_user_days(looked_month, looked_user, my)
-    print_events(my)
-
-
-def print_events(my):
-    print("Event list")
-    for event in my.calendar:
-        # TODO count events
-        print("{}".format(event))
-
-
-def delete_events(my):
-    print("Delete old events")
-    for event in my.calendar:
-        # TODO get email from json
-        if event.other.get("creator").get("email") == "google@family-calendar-298110.iam.gserviceaccount.com":
-            try:
-                print("Delete : {}".format(event))
-                my.calendar.delete_event(event)
-            except HttpError:
-                # Manage 403 error: Rate limit exceeded
-                print("Http error, wait before retry")
-                sleep(5)
-                print("Delete : {}".format(event))
-                my.calendar.delete_event(event)
-
-
-def save_user_days(looked_month, looked_user, my):
-
-    work_days = WorkDays()
-    event_list = []
-
-    print("Looked event")
-    for element in my.data:
-        if element.get("Date") != "":
-            element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
-            if looked_month:
-                # Update only month
-                if element_date.month == looked_month:
-                    new_event = work_days.get_event(element_date, element.get(looked_user))
-                    event_list.append(new_event)
-            else:
-                # Update the whole year
-                new_event = work_days.get_event(element_date, element.get(looked_user))
-                event_list.append(new_event)
-
-    # Merge continues day off events
-    i = 0
-    while (i < len(event_list)) and (i < len(event_list) - 1):
-        if work_days.is_off(event_list[i]) and work_days.is_off(event_list[i+1]):
-            event_list[i] = add_events(event_list[i], event_list.pop(i + 1))
-        else:
-            i += 1
-
-    for event in event_list:
-        if event:
-            try:
-                print("{} - {}".format(event.start, event.summary))
-                my.calendar.add_event(event)
-            except HttpError:
-                # Manage 403 error: Rate limit exceeded
-                print("Http error, wait before retry")
-                sleep(5)
-                print("{} - {}".format(event.start, event.summary))
-                my.calendar.add_event(event)
+    my.delete_events()
+    my.save_user_days(looked_month, looked_user)
+    my.print_events()
 
 
 main()
