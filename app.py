@@ -53,7 +53,7 @@ class Service:
     def delete_events(self):
         print("Delete old events")
 
-        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1), time_max=datetime(YEAR, 12, 31), )
+        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1), time_max=datetime(YEAR+1, 1, 1), )
         for event in event_list:
             # TODO get email from json
             if event.other.get("creator").get("email") == "google@family-calendar-298110.iam.gserviceaccount.com":
@@ -162,7 +162,9 @@ class WorkDays:
               "Rc": WorkDay(None, None, "Rc-Récupération", is_off=True, color=10),
               "_": WorkDay(None, None, "_-Weekend", is_off=True, color=10),
               "": WorkDay(None, None, "Not specified", is_off=True, color=10),
-              "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10)}
+              "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10),
+              "EM": WorkDay(None, None, "OFF-Enfant Malade", is_off=True, color=10),
+              "AM": WorkDay(None, None, "OFF-Arret Maladie", is_off=True, color=10)}
 
     def get_event(self, ev_date, name):
 
@@ -200,7 +202,7 @@ class WorkDays:
 
 def main():
 
-    sheet_name = "2021"
+    sheet_name = f"{YEAR}"
     calendar_name = 'famille.catoire.brard@gmail.com'
     users = ["Aurélie", "Axel"]
     looked_user = users[0]
