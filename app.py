@@ -154,7 +154,7 @@ class WorkDays:
               "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
               "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
               "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
-              "TA": WorkDay(None, None, "TA-Repo recup ?", is_off=True, color=10),
+              "TA": WorkDay(None, None, "TA-Repo rtt ?", is_off=True, color=10),
               "To": WorkDay(None, None, "To-Repo recup ?", is_off=True, color=10),
               "RF": WorkDay(None, None, "RF-Repo récupération férier", is_off=True, color=10),
               "CA": WorkDay(None, None, "CA-Congé Annuel", is_off=True, color=10),
