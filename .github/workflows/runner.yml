@@ -6,16 +6,13 @@ on:
   workflow_dispatch:
     # Inputs the workflow accepts.
     inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
+      YEAR_REQUEST:
+        # Friendly description to be shown in the UI instead of 'YEAR_REQUEST'
+        description: 'year'
         # Default value if no value is explicitly provided
-        default: 'World'
+        default: '2023'
         # Input has to be provided for the workflow to run
         required: true
-
-#  schedule:
-#    - cron: '0 0 * * 1' # At 00:00 on Monday
 
 jobs:
   build:
@@ -37,5 +34,5 @@ jobs:
           
       - name: execute py script # run app.py
         env:
-          SOME_SECRET: ${{ secrets.SOME_SECRET }}
+          SECRET_TEST: ${{ secrets.SECRET_TEST }}
         run: python app.py
