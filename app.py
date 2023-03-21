@@ -20,7 +20,7 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
-YEAR = 2021
+YEAR = 2023
 
 
 class Service:
@@ -150,7 +150,9 @@ class WorkDay:
 class WorkDays:
     detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
               "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
+              "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),
               "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
+              "Sc": WorkDay(time(13, 45), time(21, 15), "Sc-Soir changeables", color=5),
               "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
               "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
               "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
@@ -169,6 +171,9 @@ class WorkDays:
     def get_event(self, ev_date, name):
 
         day = self.detail.get(name)
+        if day is None:
+            raise ValueError(
+                f"""The day type "{name}" is not known in the application. Edit the WorkDays.detail dict.""")
 
         # Create timed or a one day event
         if day.start and day.end:
