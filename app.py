@@ -53,19 +53,22 @@ class Service:
     def delete_events(self):
         print("Delete old events")
 
-        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1), time_max=datetime(YEAR+1, 1, 1), )
+        # TODO manage looked month
+        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1),
+                                              time_max=datetime(YEAR+1, 1, 1), )
         for event in event_list:
-            # TODO get email from json
-            if event.other.get("creator").get("email") == "google@family-calendar-298110.iam.gserviceaccount.com":
-                try:
-                    print("Delete : {}".format(event))
-                    self.calendar.delete_event(event)
-                except HttpError:
-                    # Manage 403 error: Rate limit exceeded
-                    print("Http error, wait before retry")
-                    sleep(5)
-                    print("Delete : {}".format(event))
-                    self.calendar.delete_event(event)
+            if event.creator:
+                # TODO get email from json
+                if event.creator.email == "google@family-calendar-298110.iam.gserviceaccount.com":
+                    try:
+                        print("Delete : {}".format(event))
+                        self.calendar.delete_event(event)
+                    except HttpError:
+                        # Manage 403 error: Rate limit exceeded
+                        print("Http error, wait before retry")
+                        sleep(5)
+                        print("Delete : {}".format(event))
+                        self.calendar.delete_event(event)
 
     def print_events(self):
         print("Event list")
@@ -221,7 +224,9 @@ def main():
     # print(colors)
 
     my.delete_events()
+    input("Continue?")
     my.save_user_days(looked_month, looked_user)
+    input("Continue?")
     my.print_events()
 
 
