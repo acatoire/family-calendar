@@ -20,10 +20,27 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
-from client_secret_perso import keyfile_dict_perso
+from client_secret_local import keyfile_dict_local
 from client_secret_ci import keyfile_dict_ci
 
+# TODO use logging
+
 YEAR = 2023
+MONTH = 12  # Set 0 for full year
+
+
+def calculate_dates(end_year, looked_month):
+    if looked_month:
+        start_month = looked_month
+        if looked_month == 12:
+            end_month = 1
+            end_year = YEAR + 1
+        else:
+            end_month = looked_month + 1
+    else:
+        start_month = 1
+        end_month = 1
+    return start_month, end_month, end_year
 
 
 class Service:
@@ -34,24 +51,32 @@ class Service:
                  'https://www.googleapis.com/auth/drive',
                  'https://www.googleapis.com/auth/calendar']
 
-        if keyfile_dict_ci["private_key"] == "":
-            keyfile_dict = keyfile_dict_perso
+        if keyfile_dict_ci["private_key"] == "CI_PRIVATE_KEY":
+            keyfile_dict = keyfile_dict_local
         else:
             keyfile_dict = keyfile_dict_ci
 
-        self._year = year
-        # Google sheet auth and connect
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scope)
-        self._gspread_client = gspread.authorize(creds)
+        try:
+            # Google sheet auth and connect
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scope)
+            self._gspread_client = gspread.authorize(creds)
 
-        # Google calendar auth and connect
-        # TODO use previous auth?
-        creds2 = service_account.Credentials.from_service_account_info(keyfile_dict,
-                                                                       scopes=scope)
+
+            # Google calendar auth and connect
+            # TODO use previous auth?
+            creds2 = service_account.Credentials.from_service_account_info(keyfile_dict,
+                                                                           scopes=scope)
+        except ValueError:
+            print("""ERROR: client_secret is not defined.
+            - On local execution you need to create client_secret_local.py to store google auth secret.
+            - On CI you need to replace secrets stored in client_secret_ci.py""")
+            exit(1)
+
+
         self.calendar = GoogleCalendar(calendar_name,
                                        credentials=creds2)
 
-        sheet_obj = self._gspread_client.open(self._year).get_worksheet(0)
+        sheet_obj = self._gspread_client.open(year).get_worksheet(0)
         self._sheet_dict = sheet_obj.get_all_records()
 
     @property
@@ -61,20 +86,8 @@ class Service:
     def delete_events(self, year, looked_month):
         print("Delete old events")
 
-        end_year = year
-        # TODO finish
-        if looked_month:
-            start_month = looked_month
-            if looked_month == 12:
-                end_month = 1
-                end_year = YEAR + 1
-            else:
-                end_month = looked_month + 1
-        else:
-            start_month = 1
-            end_month = 1
+        start_month, end_month, end_year = calculate_dates(year, looked_month)
 
-        # TODO manage looked month
         event_list = self.calendar.get_events(time_min=datetime(year, start_month, 1),
                                               time_max=datetime(end_year, end_month, 1))
         for event in event_list:
@@ -95,6 +108,7 @@ class Service:
         print("Event list")
         for event in self.calendar:
             # TODO count events
+            # TODO use looked month
             print("{}".format(event))
 
     def save_user_days(self, looked_month, looked_user):
@@ -172,6 +186,7 @@ class WorkDay:
 
 
 class WorkDays:
+    # TODO get them from dedicated sheet
     detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
               "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
               "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),
@@ -215,7 +230,7 @@ class WorkDays:
 
         new_event = Event(
             summary=name,
-            description="{}".format(day.comment),
+            description=f"{day.comment}\n\n\n\nLast update: {datetime.now()}",
             start=start,
             end=end,
             color=day.color,
@@ -247,7 +262,7 @@ def main():
     input("Continue?")
     my.delete_events(YEAR, looked_month)
     input("Continue?")
-    my.save_user_days(looked_month, looked_user)
+    my.save_user_days(MONTH, looked_user)
     input("Continue?")
     my.print_events()
 

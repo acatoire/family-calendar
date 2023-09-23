@@ -130,4 +130,4 @@ dmypy.json
 
 # API Keys
 /client_secret.json
-/client_secret_perso.py
+/client_secret_local.py
