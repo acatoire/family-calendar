@@ -22,11 +22,19 @@ from gcsa.event import Event
 
 try:
     from client_secret_local import keyfile_dict_local
+    print("Local secrets found.")
 except ModuleNotFoundError:
-    print("No local secrets found, use CI secrets file.")
+    print("No local secrets found.")
     pass
 
-from client_secret_ci import keyfile_dict_ci
+try:
+    from client_secret_env import keyfile_dict_env
+    print("Found ENV secrets.")
+except ModuleNotFoundError:
+    print("No ENV secrets found.")
+    pass
+
+
 
 # TODO use logging
 
@@ -35,6 +43,7 @@ MONTH = 12  # Set 0 for full year
 
 
 def calculate_dates(end_year, looked_month):
+
     if looked_month:
         start_month = looked_month
         if looked_month == 12:
@@ -56,10 +65,13 @@ class Service:
                  'https://www.googleapis.com/auth/drive',
                  'https://www.googleapis.com/auth/calendar']
 
+        # Priority to ENV secrets
         try:
-            keyfile_dict = keyfile_dict_local
+            keyfile_dict = keyfile_dict_env
+            print("Use ENV secrets.")
         except NameError:
-            keyfile_dict = keyfile_dict_ci
+            keyfile_dict = keyfile_dict_local
+            print("Use Local secrets.")
 
         try:
             # Google sheet auth and connect
@@ -73,10 +85,9 @@ class Service:
         except ValueError as exception:
             print("""ERROR: client_secret is not defined.
             - On local execution you need to create client_secret_local.py to store google auth secret.
-            - On CI you need to replace secrets stored in client_secret_ci.py""")
+            - On CI you need to replace secrets stored in client_secret_env.py""")
             print(exception)
             exit(1)
-
 
         self.calendar = GoogleCalendar(calendar_name,
                                        credentials=creds2)
