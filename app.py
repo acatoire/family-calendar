@@ -30,11 +30,9 @@ except ModuleNotFoundError:
 try:
     from client_secret_env import keyfile_dict_env
     print("Found ENV secrets.")
-except ModuleNotFoundError:
+except AttributeError:
     print("No ENV secrets found.")
     pass
-
-
 
 # TODO use logging
 
@@ -65,22 +63,26 @@ class Service:
                  'https://www.googleapis.com/auth/drive',
                  'https://www.googleapis.com/auth/calendar']
 
+        self.use_local = False
+        self.keyfile_dict = None
+
         # Priority to ENV secrets
         try:
-            keyfile_dict = keyfile_dict_env
+            self.keyfile_dict = keyfile_dict_env
             print("Use ENV secrets.")
         except NameError:
-            keyfile_dict = keyfile_dict_local
+            self.keyfile_dict = keyfile_dict_local
             print("Use Local secrets.")
+            self.use_local = True
 
         try:
             # Google sheet auth and connect
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scope)
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(self.keyfile_dict, scope)
             self._gspread_client = gspread.authorize(creds)
 
             # Google calendar auth and connect
             # TODO use previous auth?
-            creds2 = service_account.Credentials.from_service_account_info(keyfile_dict,
+            creds2 = service_account.Credentials.from_service_account_info(self.keyfile_dict,
                                                                            scopes=scope)
         except ValueError as exception:
             print("""ERROR: client_secret is not defined.
@@ -101,15 +103,14 @@ class Service:
 
     def delete_events(self, year, looked_month):
         print("Delete old events")
-
+        # TODO Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, looked_month)
 
         event_list = self.calendar.get_events(time_min=datetime(year, start_month, 1),
                                               time_max=datetime(end_year, end_month, 1))
         for event in event_list:
             if event.creator:
-                # TODO get email from json
-                if event.creator.email == "google@family-calendar-298110.iam.gserviceaccount.com":
+                if event.creator.email == self.keyfile_dict.get('client_email'):
                     try:
                         print("Delete : {}".format(event))
                         self.calendar.delete_event(event)
@@ -260,6 +261,11 @@ class WorkDays:
         return day.is_off
 
 
+def wait_before_continue(active: bool):
+    if active:
+        input("Continue?")
+
+
 def main():
 
     sheet_name = f"{YEAR}"
@@ -275,11 +281,13 @@ def main():
     # colors = my.calendar.list_event_colors()
     # print(colors)
 
-    input("Continue?")
+    wait_before_continue(my.use_local)
     my.delete_events(YEAR, looked_month)
-    input("Continue?")
+
+    wait_before_continue(my.use_local)
     my.save_user_days(MONTH, looked_user)
-    input("Continue?")
+
+    wait_before_continue(my.use_local)
     my.print_events()
 
 
