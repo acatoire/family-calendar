@@ -1,6 +1,5 @@
 
 
 google-api-python-client
-oauth2client
 gspread>=5.11.2
 gcsa>=2.1.0

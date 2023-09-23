@@ -13,8 +13,7 @@ from datetime import date, datetime, time, timedelta
 from time import sleep
 
 from googleapiclient.errors import HttpError
-from oauth2client.service_account import ServiceAccountCredentials  # For sheet
-from google.oauth2 import service_account  # For Calendar
+from google.oauth2 import service_account
 
 import gspread
 from gcsa.google_calendar import GoogleCalendar
@@ -66,6 +65,10 @@ class Service:
         self.use_local = False
         self.keyfile_dict = None
 
+        self._calendar = None
+        self._gspread_client = None
+        self._sheet_dict = None
+
         # Priority to ENV secrets
         try:
             self.keyfile_dict = keyfile_dict_env
@@ -76,23 +79,21 @@ class Service:
             self.use_local = True
 
         try:
-            # Google sheet auth and connect
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(self.keyfile_dict, scope)
-            self._gspread_client = gspread.authorize(creds)
+            # Google Credentials
+            # service_account.Credentials is part of the newer google-auth library, which is the recommended library
+            # for authentication with Google Cloud services.
+            self._calendar = GoogleCalendar(calendar_name,
+                                            credentials=service_account.Credentials.from_service_account_info(
+                                                self.keyfile_dict, scopes=scope))
 
-            # Google calendar auth and connect
-            # TODO use previous auth?
-            creds2 = service_account.Credentials.from_service_account_info(self.keyfile_dict,
-                                                                           scopes=scope)
+            self._gspread_client = gspread.service_account_from_dict(self.keyfile_dict)
+
         except ValueError as exception:
             print("""ERROR: client_secret is not defined.
             - On local execution you need to create client_secret_local.py to store google auth secret.
             - On CI you need to replace secrets stored in client_secret_env.py""")
             print(exception)
             exit(1)
-
-        self.calendar = GoogleCalendar(calendar_name,
-                                       credentials=creds2)
 
         sheet_obj = self._gspread_client.open(year).get_worksheet(0)
         self._sheet_dict = sheet_obj.get_all_records()
@@ -106,27 +107,27 @@ class Service:
         # TODO Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, looked_month)
 
-        event_list = self.calendar.get_events(time_min=datetime(year, start_month, 1),
-                                              time_max=datetime(end_year, end_month, 1))
+        event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
+                                               time_max=datetime(end_year, end_month, 1))
         for event in event_list:
             if event.creator:
                 if event.creator.email == self.keyfile_dict.get('client_email'):
                     try:
-                        print("Delete : {}".format(event))
-                        self.calendar.delete_event(event)
+                        print(f"Delete : {event}")
+                        self._calendar.delete_event(event)
                     except HttpError:
                         # Manage 403 error: Rate limit exceeded
                         print("Http error, wait before retry")
                         sleep(5)
-                        print("Delete : {}".format(event))
-                        self.calendar.delete_event(event)
+                        print(f"Delete : {event}")
+                        self._calendar.delete_event(event)
 
     def print_events(self):
         print("Event list")
-        for event in self.calendar:
+        for event in self._calendar:
             # TODO count events
             # TODO use looked month
-            print("{}".format(event))
+            print(event)
 
     def save_user_days(self, looked_month, looked_user):
 
@@ -158,14 +159,14 @@ class Service:
         for event in event_list:
             if event:
                 try:
-                    print("{} - {}".format(event.start, event.summary))
-                    self.calendar.add_event(event)
+                    print(f"{event.start} - {event.summary}")
+                    self._calendar.add_event(event)
                 except HttpError:
                     # Manage 403 error: Rate limit exceeded
                     print("Http error, wait before retry")
                     sleep(5)
-                    print("{} - {}".format(event.start, event.summary))
-                    self.calendar.add_event(event)
+                    print(f"{event.start} - {event.summary}")
+                    self._calendar.add_event(event)
 
 
 def add_events(event_1: Event, event_2: Event):
@@ -177,12 +178,11 @@ def add_events(event_1: Event, event_2: Event):
 
         if event_1.summary == "OFF":
             # Already a merged day
-            new_event.description = "{}\n{}-{}".format(event_1.description, event_2.start, event_2.description)
+            new_event.description = f"{event_1.description}\n{event_2.start}-{event_2.description}"
         else:
             # First merge
             new_event.summary = "OFF"
-            new_event.description = "{}-{}\n{}-{}".format(event_1.start, event_1.description,
-                                                          event_2.start, event_2.description)
+            new_event.description = f"{event_1.start}-{event_1.description}\n{event_2.start}-{event_2.description}"
         new_event.start = event_1.start
         new_event.end = event_2.end + timedelta(days=1)
         new_event.color_id = event_1.color_id
