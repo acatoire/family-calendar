@@ -33,6 +33,4 @@ jobs:
           pip install -r requirements.txt
           
       - name: execute py script
-        env:
-          FAMILY_CALENDAR_KEY: ${{ secrets.FAMILY_CALENDAR_KEY }}
         run: python app.py
