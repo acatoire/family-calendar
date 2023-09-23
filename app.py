@@ -20,7 +20,12 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
-from client_secret_local import keyfile_dict_local
+try:
+    from client_secret_local import keyfile_dict_local
+except ModuleNotFoundError:
+    print("No local secrets found, use CI secrets file.")
+    pass
+
 from client_secret_ci import keyfile_dict_ci
 
 # TODO use logging
@@ -51,9 +56,9 @@ class Service:
                  'https://www.googleapis.com/auth/drive',
                  'https://www.googleapis.com/auth/calendar']
 
-        if keyfile_dict_ci["private_key"] == "CI_PRIVATE_KEY":
+        try:
             keyfile_dict = keyfile_dict_local
-        else:
+        except NameError:
             keyfile_dict = keyfile_dict_ci
 
         try:
@@ -61,15 +66,15 @@ class Service:
             creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scope)
             self._gspread_client = gspread.authorize(creds)
 
-
             # Google calendar auth and connect
             # TODO use previous auth?
             creds2 = service_account.Credentials.from_service_account_info(keyfile_dict,
                                                                            scopes=scope)
-        except ValueError:
+        except ValueError as exception:
             print("""ERROR: client_secret is not defined.
             - On local execution you need to create client_secret_local.py to store google auth secret.
             - On CI you need to replace secrets stored in client_secret_ci.py""")
+            print(exception)
             exit(1)
 
 
