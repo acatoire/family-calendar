@@ -7,6 +7,7 @@ https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-sp
 https://stackoverflow.com/a/64509140/14219576
 https://github.com/kuzmoyev/google-calendar-simple-api
 """
+import sys
 from copy import copy
 from datetime import date, datetime, time, timedelta
 from time import sleep
@@ -24,14 +25,12 @@ try:
     print("Local secrets found.")
 except ModuleNotFoundError:
     print("No local secrets found.")
-    pass
 
 try:
     from client_secret_env import keyfile_dict_env
     print("Found ENV secrets.")
 except AttributeError:
     print("No ENV secrets found.")
-    pass
 
 # TODO use logging
 
@@ -67,7 +66,7 @@ class Service:
             - On local execution you need to create client_secret_local.py to store google auth secret.
             - On CI you need to replace secrets stored in client_secret_env.py""")
             print(exception)
-            exit(1)
+            sys.exit()
 
         # TODO spread sheet is user dependent
         sheet_obj = self._gspread_client.open(year).get_worksheet(0)
@@ -281,21 +280,21 @@ def main():
     calendar_name = 'famille.catoire.brard@gmail.com'
 
     print(f"Work on {user} calendar with year {year} and month {month}")
-    my = Service(sheet_name, calendar_name)
+    calendar_service = Service(sheet_name, calendar_name)
 
     # For debug
     # print("Colors?")
     # colors = my.calendar.list_event_colors()
     # print(colors)
 
-    wait_before_continue(my.use_local)
-    my.delete_events(year, month)
+    wait_before_continue(calendar_service.use_local)
+    calendar_service.delete_events(year, month)
 
-    wait_before_continue(my.use_local)
-    my.save_user_days(month, user)
+    wait_before_continue(calendar_service.use_local)
+    calendar_service.save_user_days(month, user)
 
-    wait_before_continue(my.use_local)
-    my.print_events()
+    wait_before_continue(calendar_service.use_local)
+    calendar_service.print_events()
 
 
 main()
