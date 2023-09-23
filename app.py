@@ -20,25 +20,33 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
+from client_secret_perso import keyfile_dict_perso
+from client_secret_ci import keyfile_dict_ci
+
 YEAR = 2023
 
 
 class Service:
-    def __init__(self, year: str, calendar_name: str, key_path: str = "client_secret.json", ):
+    def __init__(self, year: str, calendar_name: str):
 
         scope = ['https://www.googleapis.com/auth/sqlservice.admin',
                  'https://www.googleapis.com/auth/spreadsheets',
                  'https://www.googleapis.com/auth/drive',
                  'https://www.googleapis.com/auth/calendar']
 
+        if keyfile_dict_ci["private_key"] == "":
+            keyfile_dict = keyfile_dict_perso
+        else:
+            keyfile_dict = keyfile_dict_ci
+
         self._year = year
         # Google sheet auth and connect
-        creds = ServiceAccountCredentials.from_json_keyfile_name(key_path, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(keyfile_dict, scope)
         self._gspread_client = gspread.authorize(creds)
 
         # Google calendar auth and connect
         # TODO use previous auth?
-        creds2 = service_account.Credentials.from_service_account_file(key_path,
+        creds2 = service_account.Credentials.from_service_account_info(keyfile_dict,
                                                                        scopes=scope)
         self.calendar = GoogleCalendar(calendar_name,
                                        credentials=creds2)
@@ -50,12 +58,25 @@ class Service:
     def data(self):
         return self._sheet_dict
 
-    def delete_events(self):
+    def delete_events(self, year, looked_month):
         print("Delete old events")
 
+        end_year = year
+        # TODO finish
+        if looked_month:
+            start_month = looked_month
+            if looked_month == 12:
+                end_month = 1
+                end_year = YEAR + 1
+            else:
+                end_month = looked_month + 1
+        else:
+            start_month = 1
+            end_month = 1
+
         # TODO manage looked month
-        event_list = self.calendar.get_events(time_min=datetime(YEAR, 1, 1),
-                                              time_max=datetime(YEAR+1, 1, 1), )
+        event_list = self.calendar.get_events(time_min=datetime(year, start_month, 1),
+                                              time_max=datetime(end_year, end_month, 1))
         for event in event_list:
             if event.creator:
                 # TODO get email from json
@@ -214,7 +235,7 @@ def main():
     calendar_name = 'famille.catoire.brard@gmail.com'
     users = ["Aurélie", "Axel"]
     looked_user = users[0]
-    looked_month = 0
+    looked_month = 12
 
     my = Service(sheet_name, calendar_name)
 
@@ -223,7 +244,8 @@ def main():
     # colors = my.calendar.list_event_colors()
     # print(colors)
 
-    my.delete_events()
+    input("Continue?")
+    my.delete_events(YEAR, looked_month)
     input("Continue?")
     my.save_user_days(looked_month, looked_user)
     input("Continue?")
