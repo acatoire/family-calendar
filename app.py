@@ -32,7 +32,7 @@ try:
 except AttributeError:
     print("No ENV secrets found.")
 
-# TODO use logging
+# TODO #2 use logging
 
 
 class Service:
@@ -54,7 +54,7 @@ class Service:
             self.use_local = True
 
         try:
-            # TODO calendar_name is user dependent
+            # TODO #3 calendar_name is user dependent
             self._calendar = GoogleCalendar(calendar_name,
                                             credentials=service_account.Credentials.from_service_account_info(
                                             self.keyfile_dict))
@@ -68,10 +68,10 @@ class Service:
             print(exception)
             sys.exit()
 
-        # TODO spread sheet is user dependent
+        # TODO #4 spread sheet is user dependent
         sheet_obj = self._gspread_client.open(year).get_worksheet(0)
         self._sheet_dict = sheet_obj.get_all_records()
-        # TODO validate spreadsheet format/content
+        # TODO #5 validate spreadsheet format/content
 
     @property
     def data(self):
@@ -79,7 +79,7 @@ class Service:
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
-        # TODO Delete only needed ones
+        # TODO #6 Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, month)
 
         event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
@@ -185,7 +185,7 @@ class WorkDay:
 
 
 class WorkDays:
-    # TODO get them from dedicated sheet
+    # TODO #7 get them from dedicated sheet
     detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
               "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
               "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),

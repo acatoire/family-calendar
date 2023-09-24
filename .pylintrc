@@ -431,8 +431,8 @@ disable=fixme,
         deprecated-pragma,
         use-symbolic-message-instead,
         # To be restored
-        missing-class-docstring, #  TODO add all class docstring
-        missing-function-docstring, #  TODO add all function docstring
+        missing-class-docstring, #  TODO #1 add all class docstring
+        missing-function-docstring, #  TODO #1 add all function docstring
         too-many-arguments,
         too-few-public-methods,
 
