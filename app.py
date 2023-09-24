@@ -243,18 +243,19 @@ class WorkDays:
         return day.is_off
 
 
-def calculate_dates(year: int, user: int):
+def calculate_dates(year: int, month: int):
     end_year = year
-    if user:
-        start_month = user
-        if user == 12:
+    if month:
+        start_month = month
+        if month == 12:
             end_month = 1
             end_year = year + 1
         else:
-            end_month = user + 1
+            end_month = month + 1
     else:
         start_month = 1
         end_month = 1
+        end_year = year + 1
     return start_month, end_month, end_year
 
 
@@ -297,4 +298,5 @@ def main():
     calendar_service.print_events()
 
 
-main()
+if __name__ == '__main__':
+    main()
