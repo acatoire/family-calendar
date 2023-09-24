@@ -1,4 +1,4 @@
-name: Calendar update
+name: Unit Test
 
 on: [push]
 
