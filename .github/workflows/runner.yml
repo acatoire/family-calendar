@@ -6,7 +6,7 @@ on:
   schedule:
   - cron: "0 0 * * *" # At the end of every day
 
-  workflow_dispatch:
+  workflow_dispatch:  # workflow_dispatch = can be triggered manually
     # Inputs the workflow accepts.
     inputs:
       YEAR_REQUEST:
@@ -32,7 +32,7 @@ on:
         - 10
         - 11
         - 12
-      USER_REQIEST:
+      USER_REQUEST:
         description: 'User to update'
         default: 'Aurélie'
         required: true
@@ -67,4 +67,7 @@ jobs:
           CI_CLIENT_EMAIL: ${{ secrets.CI_CLIENT_EMAIL }}
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
-        run: python app.py ${{ github.event.inputs.YEAR_REQUEST }} ${{ github.event.inputs.MONTH_REQUEST }} ${{ github.event.inputs.USER_REQIEST }}
+        run: |
+          python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
+          ${{ github.event.inputs.MONTH_REQUEST }} \
+          ${{ github.event.inputs.USER_REQUEST }}

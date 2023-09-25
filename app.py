@@ -81,6 +81,7 @@ class Service:
         print("Delete old events")
         # TODO #6 Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, month)
+        print(f"The app will delete events from 01/{start_month}/{year} to 01/{end_month}/{end_year}")
 
         event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
                                                time_max=datetime(end_year, end_month, 1))
@@ -266,15 +267,24 @@ def wait_before_continue(active: bool):
 
 def main():
 
+    year = None
+    month = None
+    user = None
     # config from parameters
-    year = int(argv[1])
-    month = int(argv[2])
-    user = argv[3]
+    try:
+        year = int(argv[1])
+        month = int(argv[2])
+        user = argv[3]
+    except IndexError:
+        # Parameters are optionals
+        pass
 
+    # Load default values
     if (year or month or user) is None:
         print("Use default time config")
         year = datetime.now().year
-        month = datetime.now().month
+        # month = datetime.now().month
+        month = 0
         user = 'Aurélie'  # Suppported values are ["Aurélie", "Axel"]
 
     sheet_name = f"{year}"
