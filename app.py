@@ -177,11 +177,14 @@ class WorkDay:
                  is_off: bool = False,
                  color: int = None):
 
+        # TODO #10 add color validation (with test)
+
         self.start = start
         self.end = end
         self.comment = comment
         self.is_off = is_off
         self.color = color
+
 
 
 class WorkDays:
@@ -206,7 +209,13 @@ class WorkDays:
               "EM": WorkDay(None, None, "OFF-Enfant Malade", is_off=True, color=10),
               "AM": WorkDay(None, None, "OFF-Arret Maladie", is_off=True, color=10)}
 
-    def get_event(self, ev_date: date, name: str):
+    def get_event(self, event_date: date, name: str) -> Event:
+        """
+        Create a valid event from given a date and type
+        :param event_date: event date
+        :param name: event type
+        :return: the event
+        """
 
         day = self.detail.get(name)
         if day is None:
@@ -217,15 +226,15 @@ class WorkDays:
         if day.start and day.end:
             if day.start < day.end:
                 # Normal day timing
-                start = datetime.combine(ev_date, day.start)
-                end = datetime.combine(ev_date, day.end)
+                start = datetime.combine(event_date, day.start)
+                end = datetime.combine(event_date, day.end)
             else:
                 # Work during night
-                start = datetime.combine(ev_date, day.start)
-                end = datetime.combine(ev_date + timedelta(days=1), day.end)
+                start = datetime.combine(event_date, day.start)
+                end = datetime.combine(event_date + timedelta(days=1), day.end)
         else:
-            start = ev_date
-            end = ev_date
+            start = event_date
+            end = event_date
 
         new_event = Event(
             summary=name,
