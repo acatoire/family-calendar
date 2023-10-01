@@ -40,6 +40,7 @@ on:
         options:
         - Axel
         - Aurélie
+        - Aurore
 
 jobs:
   build:
