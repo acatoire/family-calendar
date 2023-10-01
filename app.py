@@ -35,8 +35,14 @@ except AttributeError:
 # TODO #2 use logging
 
 
-class Service:
-    def __init__(self, year: str, calendar_name: str):
+class Service:  # pylint: disable=too-many-instance-attributes
+    def __init__(self, year: str, month: int, user: str):
+        """
+
+        :param year:
+        :param month: The month to read or 0 for the full year
+        :param user: THe user to read
+        """
         self.use_local = False
         self.keyfile_dict = None
 
@@ -44,8 +50,15 @@ class Service:
         self._gspread_client = None
         self._sheet_dict = None
 
-        # Priority to ENV secrets
+        self.looked_month = month
+        self.looked_user = user
+        self.calendar_id = ''
+        self.work_days = WorkDays()
+        self.event_list = []
+
+        # Get config secrets (keyfile)
         try:
+            # Priority to ENV secrets
             self.keyfile_dict = keyfile_dict_env
             print("Use ENV secrets.")
         except NameError:
@@ -53,18 +66,16 @@ class Service:
             print("Use Local secrets.")
             self.use_local = True
 
-        try:
-            # TODO #3 calendar_name is user dependent
-            self._calendar = GoogleCalendar(calendar_name,
-                                            credentials=service_account.Credentials.from_service_account_info(
-                                            self.keyfile_dict))
+        secret_error_message = """ERROR: client_secret is not defined.
+            - On local execution you need to create client_secret_local.py to store google auth secret.
+            - On CI you need to replace secrets stored in client_secret_env.py"""
 
+        # Get database content
+        try:
             self._gspread_client = gspread.service_account_from_dict(self.keyfile_dict)
 
         except ValueError as exception:
-            print("""ERROR: client_secret is not defined.
-            - On local execution you need to create client_secret_local.py to store google auth secret.
-            - On CI you need to replace secrets stored in client_secret_env.py""")
+            print(secret_error_message)
             print(exception)
             sys.exit()
 
@@ -72,6 +83,19 @@ class Service:
         sheet_obj = self._gspread_client.open(year).get_worksheet(0)
         self._sheet_dict = sheet_obj.get_all_records()
         # TODO #5 validate spreadsheet format/content
+        self._search_calendar_id()
+        self.init_event_list_from_database()
+
+        # Connect to calendar
+        try:
+            self._calendar = GoogleCalendar(
+                self.calendar_id,
+                credentials=service_account.Credentials.from_service_account_info(self.keyfile_dict))
+
+        except ValueError as exception:
+            print(secret_error_message)
+            print(exception)
+            sys.exit()
 
     @property
     def data(self):
@@ -105,34 +129,17 @@ class Service:
             # TODO use month
             print(event)
 
-    def save_user_days(self, looked_month: int, looked_user: str):
-
-        work_days = WorkDays()
-        event_list = []
-
-        print("Looked event")
-        for element in self.data:
-            if element.get("Date") != "":
-                element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
-                if looked_month:
-                    # Update only month
-                    if element_date.month == looked_month:
-                        new_event = work_days.get_event(element_date, element.get(looked_user))
-                        event_list.append(new_event)
-                else:
-                    # Update the whole year
-                    new_event = work_days.get_event(element_date, element.get(looked_user))
-                    event_list.append(new_event)
+    def save_user_days(self):
 
         # Merge continues day off events
         i = 0
-        while (i < len(event_list)) and (i < len(event_list) - 1):
-            if work_days.is_off(event_list[i]) and work_days.is_off(event_list[ i +1]):
-                event_list[i] = add_events(event_list[i], event_list.pop(i + 1))
+        while (i < len(self.event_list)) and (i < len(self.event_list) - 1):
+            if self.work_days.is_off(self.event_list[i]) and self.work_days.is_off(self.event_list[i + 1]):
+                self.event_list[i] = add_events(self.event_list[i], self.event_list.pop(i + 1))
             else:
                 i += 1
 
-        for event in event_list:
+        for event in self.event_list:
             # Add edition datetime to description
             event.description = f"{event.description}\n\nLast update: {datetime.now()}"
             if event:
@@ -145,6 +152,46 @@ class Service:
                     sleep(5)
                     print(f"{event.start} - {event.summary}")
                     self._calendar.add_event(event)
+
+    def _search_calendar_id(self):
+        """
+        Initialize the calendar id from database
+        :return:
+        """
+        print("Looked event")
+
+        for element in self.data:
+            if element.get('Type') == 'Calendar':
+                # Get the calendar id
+                self.calendar_id = element.get(self.looked_user)
+                # Clean return char from data
+                self.calendar_id = self.calendar_id.replace("\r", "").replace("\n", "")
+                return  # calendar found, done!
+
+        # calendar not found, raise!
+        raise FileNotFoundError(f"Calendar id not found for user {self.looked_user}")
+
+    def init_event_list_from_database(self):
+        """
+        Initialize the event_list content from database
+        :return:
+        """
+        print("Looked event")
+
+        for element in self.data:
+
+            if element.get("Date") != "":  # Event line has a non empty date column value.
+                element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
+
+                if self.looked_month:
+                    # Update only month
+                    if element_date.month == self.looked_month:
+                        new_event = self.work_days.get_event(element_date, element.get(self.looked_user))
+                        self.event_list.append(new_event)
+                else:
+                    # Update the whole year
+                    new_event = self.work_days.get_event(element_date, element.get(self.looked_user))
+                    self.event_list.append(new_event)
 
 
 def add_events(event_1: Event, event_2: Event):
@@ -187,7 +234,6 @@ class WorkDay:
         self.color = color
 
 
-
 class WorkDays:
     # TODO #7 get them from dedicated sheet
     detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
@@ -223,7 +269,7 @@ class WorkDays:
             raise ValueError(
                 f"""The day type "{name}" is not known in the application. Edit the WorkDays.detail dict.""")
 
-        # Create timed or a one day event
+        # Create timed or a one-day event
         if day.start and day.end:
             if day.start < day.end:
                 # Normal day timing
@@ -294,13 +340,14 @@ def main():
         year = datetime.now().year
         # month = datetime.now().month
         month = 0
-        user = 'Aurélie'  # Suppported values are ["Aurélie", "Axel"]
+        user = 'Aurélie'  # Supported values are ['Aurélie', 'Axel', 'Aurore']
 
     sheet_name = f"{year}"
-    calendar_name = 'famille.catoire.brard@gmail.com'
 
     print(f"Work on {user} calendar with year {year} and month {month}")
-    calendar_service = Service(sheet_name, calendar_name)
+    calendar_service = Service(sheet_name,
+                               month,
+                               user)
 
     # For debug
     # print("Colors?")
@@ -311,7 +358,7 @@ def main():
     calendar_service.delete_events(year, month)
 
     wait_before_continue(calendar_service.use_local)
-    calendar_service.save_user_days(month, user)
+    calendar_service.save_user_days()
 
     wait_before_continue(calendar_service.use_local)
     calendar_service.print_events()
