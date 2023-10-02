@@ -15,7 +15,7 @@ on:
         required: true
       MONTH_REQUEST:
         description: 'Used month, 0 for all year'
-        default: '0'
+        default: '2'
         required: true
         type: choice
         options:
@@ -34,7 +34,7 @@ on:
         - 12
       USER_REQUEST:
         description: 'User to update'
-        default: 'Aurélie'
+        default: 'Aurore'
         required: true
         type: choice
         options:
@@ -76,6 +76,7 @@ jobs:
           python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
           ${{ github.event.inputs.MONTH_REQUEST }} \
           ${{ github.event.inputs.USER_REQUEST }}
+          echo test
           echo "vars.LAST_UPDATE=yellow" >> "$GITHUB_ENV"
 
       - name: test env
