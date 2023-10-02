@@ -103,15 +103,15 @@ class Service:  # pylint: disable=too-many-instance-attributes
     def need_update(self) -> bool:
         # Check update time
         self.last_update = self.sheet_obj.spreadsheet.get_lastUpdateTime()
-        calendar_update = environ.get('vars.LAST_UPDATE', 'not set')
+        calendar_update = environ.get('LAST_UPDATE', 'not set')
         print(f"Last database change: {self.last_update}")
         print(f"Last calendar update: {calendar_update}")
 
         return self.last_update != calendar_update
 
     def update_confirmation(self):
-        environ['vars.LAST_UPDATE'] = self.last_update
-        print(f"Store the last calendar update: {environ['vars.LAST_UPDATE']}")
+        environ['LAST_UPDATE'] = self.last_update
+        print(f"Store the last calendar update: {environ['LAST_UPDATE']}")
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
