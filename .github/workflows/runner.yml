@@ -79,7 +79,7 @@ jobs:
           ${{ github.event.inputs.USER_REQUEST }}
           echo test
           echo "LAST_UPDATE=yellow" >> "$GITHUB_ENV"
-          echo ${{ LAST_UPDATE }}
+          echo $LAST_UPDATE
 
       - name: test env
         run: |
