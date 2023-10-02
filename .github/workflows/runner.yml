@@ -83,5 +83,5 @@ jobs:
 
       - name: test env
         run: |
-          echo ${{ LAST_UPDATE }}
+          echo $LAST_UPDATE
       
