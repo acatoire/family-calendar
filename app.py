@@ -10,6 +10,7 @@ https://github.com/kuzmoyev/google-calendar-simple-api
 import sys
 from copy import copy
 from datetime import date, datetime, time, timedelta
+from os import getenv
 from time import sleep
 from sys import argv
 
@@ -80,8 +81,17 @@ class Service:  # pylint: disable=too-many-instance-attributes
             sys.exit()
 
         # TODO #4 spread sheet is user dependent
+        # Get the database (spreadsheet)
         sheet_obj = self._gspread_client.open(year).get_worksheet(0)
+
+        # Check update time
+        last_edit = sheet_obj.spreadsheet.lastUpdateTime
+        print(f"Last database change: {last_edit}")
+        print(f"Last calendar update: {getenv('LAST_UPDATE')}")
+
+        # Get events from database (spreadsheet)
         self._sheet_dict = sheet_obj.get_all_records()
+
         # TODO #5 validate spreadsheet format/content
         self._search_calendar_id()
         self.init_event_list_from_database()
