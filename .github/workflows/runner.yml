@@ -73,6 +73,7 @@ jobs:
           
       - name: execute py script
         run: |
+          set -xe
           python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
           ${{ github.event.inputs.MONTH_REQUEST }} \
           ${{ github.event.inputs.USER_REQUEST }}
