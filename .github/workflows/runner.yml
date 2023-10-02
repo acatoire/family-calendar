@@ -77,7 +77,9 @@ jobs:
           ${{ github.event.inputs.MONTH_REQUEST }} \
           ${{ github.event.inputs.USER_REQUEST }}
           echo test
+          echo ${{ vars.LAST_UPDATE }}
           echo "vars.LAST_UPDATE=yellow" >> "$GITHUB_ENV"
+          echo ${{ vars.LAST_UPDATE }}
 
       - name: test env
         run: |
