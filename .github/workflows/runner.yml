@@ -43,7 +43,7 @@ on:
         - Aurore
 
 jobs:
-  build:
+  runner:
     runs-on: ubuntu-latest
     steps:
 
