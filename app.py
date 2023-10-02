@@ -10,7 +10,7 @@ https://github.com/kuzmoyev/google-calendar-simple-api
 import sys
 from copy import copy
 from datetime import date, datetime, time, timedelta
-from os import getenv
+from os import environ
 from time import sleep
 from sys import argv
 
@@ -49,13 +49,14 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
         self._calendar = None
         self._gspread_client = None
-        self._sheet_dict = None
 
         self.looked_month = month
         self.looked_user = user
         self.calendar_id = ''
         self.work_days = WorkDays()
         self.event_list = []
+
+        self.last_update = 'unknown'
 
         # Get config secrets (keyfile)
         try:
@@ -82,15 +83,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
         # TODO #4 spread sheet is user dependent
         # Get the database (spreadsheet)
-        sheet_obj = self._gspread_client.open(year).get_worksheet(0)
-
-        # Check update time
-        last_edit = sheet_obj.spreadsheet.lastUpdateTime
-        print(f"Last database change: {last_edit}")
-        print(f"Last calendar update: {getenv('LAST_UPDATE')}")
-
-        # Get events from database (spreadsheet)
-        self._sheet_dict = sheet_obj.get_all_records()
+        self.sheet_obj = self._gspread_client.open(year).get_worksheet(0)
 
         # TODO #5 validate spreadsheet format/content
         self._search_calendar_id()
@@ -107,9 +100,18 @@ class Service:  # pylint: disable=too-many-instance-attributes
             print(exception)
             sys.exit()
 
-    @property
-    def data(self):
-        return self._sheet_dict
+    def need_update(self) -> bool:
+        # Check update time
+        self.last_update = self.sheet_obj.spreadsheet.get_lastUpdateTime()
+        calendar_update = environ.get('LAST_UPDATE', 'not set')
+        print(f"Last database change: {self.last_update}")
+        print(f"Last calendar update: {calendar_update}")
+
+        return self.last_update != calendar_update
+
+    def update_confirmation(self):
+        environ['LAST_UPDATE'] = self.last_update
+        print(f"Store the last calendar update: {environ['LAST_UPDATE']}")
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
@@ -168,9 +170,11 @@ class Service:  # pylint: disable=too-many-instance-attributes
         Initialize the calendar id from database
         :return:
         """
-        print("Looked event")
+        print("Get calendars from database (spreadsheet)")
 
-        for element in self.data:
+        sheet_dict = self.sheet_obj.get_all_records()
+
+        for element in sheet_dict:
             if element.get('Type') == 'Calendar':
                 # Get the calendar id
                 self.calendar_id = element.get(self.looked_user)
@@ -186,9 +190,10 @@ class Service:  # pylint: disable=too-many-instance-attributes
         Initialize the event_list content from database
         :return:
         """
-        print("Looked event")
+        print("Get events from database (spreadsheet)")
+        sheet_dict = self.sheet_obj.get_all_records()
 
-        for element in self.data:
+        for element in sheet_dict:
 
             if element.get("Date") != "":  # Event line has a non empty date column value.
                 element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
@@ -349,8 +354,8 @@ def main():
         print("Use default time config")
         year = datetime.now().year
         # month = datetime.now().month
-        month = 0
-        user = 'Aurélie'  # Supported values are ['Aurélie', 'Axel', 'Aurore']
+        month = 1
+        user = 'Aurore'  # Supported values are ['Aurélie', 'Axel', 'Aurore']
 
     sheet_name = f"{year}"
 
@@ -364,14 +369,20 @@ def main():
     # colors = my.calendar.list_event_colors()
     # print(colors)
 
-    wait_before_continue(calendar_service.use_local)
-    calendar_service.delete_events(year, month)
+    if calendar_service.need_update():
 
-    wait_before_continue(calendar_service.use_local)
-    calendar_service.save_user_days()
+        wait_before_continue(calendar_service.use_local)
+        calendar_service.delete_events(year, month)
 
-    wait_before_continue(calendar_service.use_local)
-    calendar_service.print_events()
+        wait_before_continue(calendar_service.use_local)
+        calendar_service.save_user_days()
+
+        wait_before_continue(calendar_service.use_local)
+        calendar_service.print_events()
+
+        calendar_service.update_confirmation()
+    else:
+        print(f"No need to update since {calendar_service.last_update}")
 
 
 if __name__ == '__main__':
