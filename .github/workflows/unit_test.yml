@@ -3,7 +3,7 @@ name: Unit Test
 on: [push]
 
 jobs:
-  build:
+  unit_test:
     runs-on: ubuntu-latest
     #if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     permissions:
