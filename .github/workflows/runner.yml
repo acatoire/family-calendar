@@ -68,7 +68,6 @@ jobs:
           CI_CLIENT_EMAIL: ${{ secrets.CI_CLIENT_EMAIL }}
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
-          LAST_UPDATE: ${{ vars.LAST_UPDATE }}
         run: |
           python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
           ${{ github.event.inputs.MONTH_REQUEST }} \

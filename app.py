@@ -10,10 +10,8 @@ https://github.com/kuzmoyev/google-calendar-simple-api
 import sys
 from copy import copy
 from datetime import date, datetime, time, timedelta
-from os import environ, getenv
 from time import sleep
 from sys import argv
-from dotenv import load_dotenv
 
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
@@ -33,9 +31,6 @@ try:
     print("Found ENV secrets.")
 except AttributeError:
     print("No ENV secrets found.")
-
-env_file = getenv('GITHUB_ENV', '.env')
-load_dotenv(env_file)
 
 # TODO #2 use logging
 
@@ -107,18 +102,11 @@ class Service:  # pylint: disable=too-many-instance-attributes
     def need_update(self) -> bool:
         # Check update time
         self.last_update = self.sheet_obj.spreadsheet.get_lastUpdateTime()
-        calendar_update = environ.get('LAST_UPDATE', 'not set')
+        calendar_update = "not detected"  # TODO finish later #11 to manage last edition date
         print(f"Last database change: {self.last_update}")
         print(f"Last calendar update: {calendar_update}")
 
         return self.last_update != calendar_update
-
-    def update_confirmation(self):
-        environ['LAST_UPDATE'] = self.last_update
-        with open(env_file, "a", encoding='utf8') as env_file_handler:
-            print(f"LAST_UPDATE={self.last_update}", file=env_file_handler)
-
-        print(f"Store the last calendar update: {environ['LAST_UPDATE']}")
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
@@ -387,7 +375,6 @@ def main():
         wait_before_continue(calendar_service.use_local)
         calendar_service.print_events()
 
-        calendar_service.update_confirmation()
     else:
         print(f"No need to update since {calendar_service.last_update}")
 
