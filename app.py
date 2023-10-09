@@ -20,6 +20,8 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
+from workdays.workdays import WorkDay, WorkDays   # ???, pylint: disable=import-error
+
 try:
     from client_secret_local import keyfile_dict_local
     print("Local secrets found.")
@@ -27,12 +29,35 @@ except ModuleNotFoundError:
     print("No local secrets found.")
 
 try:
-    from client_secret_env import keyfile_dict_env
+    from client_secret_env import keyfile_dict_env  # facultative file, pylint: disable=import-error
     print("Found ENV secrets.")
 except AttributeError:
     print("No ENV secrets found.")
 
 # TODO #2 use logging
+
+
+# TODO #7 get them from dedicated sheet
+chu_days_types = {
+    "J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
+    "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
+    "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),
+    "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
+    "Sc": WorkDay(time(13, 45), time(21, 15), "Sc-Soir changeable", color=5),
+    "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
+    "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
+    "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
+    "TA": WorkDay(None, None, "TA-Repo rtt ?", is_off=True, color=10),
+    "To": WorkDay(None, None, "To-Repo recup ?", is_off=True, color=10),
+    "RF": WorkDay(None, None, "RF-Repo récupération férier", is_off=True, color=10),
+    "CA": WorkDay(None, None, "CA-Congé Annuel", is_off=True, color=10),
+    ".CA": WorkDay(None, None, ".CA-Congé Annuel ?", is_off=True, color=10),
+    "Rc": WorkDay(None, None, "Rc-Récupération", is_off=True, color=10),
+    "_": WorkDay(None, None, "_-Weekend", is_off=True, color=10),
+    "": WorkDay(None, None, "Not specified", is_off=True, color=10),
+    "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10),
+    "EM": WorkDay(None, None, "OFF-Enfant Malade", is_off=True, color=10),
+    "AM": WorkDay(None, None, "OFF-Arret Maladie", is_off=True, color=10)}
 
 
 class Service:  # pylint: disable=too-many-instance-attributes
@@ -52,7 +77,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         self.looked_month = month
         self.looked_user = user
         self.calendar_id = ''
-        self.work_days = WorkDays()
+        self.work_days = WorkDays(chu_days_types)
         self.event_list = []
 
         self.last_update = 'unknown'
@@ -82,7 +107,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
         # TODO #4 spread sheet is user dependent
         # Get the database (spreadsheet)
-        self.sheet_obj = self._gspread_client.open(year).get_worksheet(0)
+        self.sheet_obj = self._gspread_client.open(f"CHU_{year}").worksheet(self.looked_user)
 
         # TODO #5 validate spreadsheet format/content
         self._search_calendar_id()
@@ -113,6 +138,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         # TODO #6 Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, month)
         print(f"The app will delete events from 01/{start_month}/{year} to 01/{end_month}/{end_year}")
+        print(f"In calendar: {self.calendar_id} for user: {self.looked_user}")
 
         event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
                                                time_max=datetime(end_year, end_month, 1))
@@ -206,7 +232,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
 def add_events(event_1: Event, event_2: Event):
 
-    work_days = WorkDays()
+    work_days = WorkDays(chu_days_types)
     new_event = copy(event_1)
 
     if work_days.is_off(event_1) and work_days.is_off(event_2):
@@ -225,88 +251,6 @@ def add_events(event_1: Event, event_2: Event):
         return new_event
 
     raise NotImplementedError("You can't add days that are not day off together.")
-
-
-class WorkDay:
-    def __init__(self,
-                 start: time or None,
-                 end: time or None,
-                 comment: str,
-                 is_off: bool = False,
-                 color: int = None):
-
-        # TODO #10 add color validation (with test)
-
-        self.start = start
-        self.end = end
-        self.comment = comment
-        self.is_off = is_off
-        self.color = color
-
-
-class WorkDays:
-    # TODO #7 get them from dedicated sheet
-    detail = {"J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=7),
-              "M": WorkDay(time(6, 45), time(14, 15), "M-Matin", color=1),
-              "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),
-              "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
-              "Sc": WorkDay(time(13, 45), time(21, 15), "Sc-Soir changeables", color=5),
-              "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
-              "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
-              "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
-              "TA": WorkDay(None, None, "TA-Repo rtt ?", is_off=True, color=10),
-              "To": WorkDay(None, None, "To-Repo recup ?", is_off=True, color=10),
-              "RF": WorkDay(None, None, "RF-Repo récupération férier", is_off=True, color=10),
-              "CA": WorkDay(None, None, "CA-Congé Annuel", is_off=True, color=10),
-              ".CA": WorkDay(None, None, ".CA-Congé Annuel ?", is_off=True, color=10),
-              "Rc": WorkDay(None, None, "Rc-Récupération", is_off=True, color=10),
-              "_": WorkDay(None, None, "_-Weekend", is_off=True, color=10),
-              "": WorkDay(None, None, "Not specified", is_off=True, color=10),
-              "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10),
-              "EM": WorkDay(None, None, "OFF-Enfant Malade", is_off=True, color=10),
-              "AM": WorkDay(None, None, "OFF-Arret Maladie", is_off=True, color=10)}
-
-    def get_event(self, event_date: date, name: str) -> Event:
-        """
-        Create a valid event from given a date and type
-        :param event_date: event date
-        :param name: event type
-        :return: the event
-        """
-
-        day = self.detail.get(name)
-        if day is None:
-            raise ValueError(
-                f"""The day type "{name}" is not known in the application. Edit the WorkDays.detail dict.""")
-
-        # Create timed or a one-day event
-        if day.start and day.end:
-            if day.start < day.end:
-                # Normal day timing
-                start = datetime.combine(event_date, day.start)
-                end = datetime.combine(event_date, day.end)
-            else:
-                # Work during night
-                start = datetime.combine(event_date, day.start)
-                end = datetime.combine(event_date + timedelta(days=1), day.end)
-        else:
-            start = event_date
-            end = event_date
-
-        new_event = Event(
-            summary=name,
-            description=f"{day.comment}",
-            start=start,
-            end=end,
-            color=day.color,
-            minutes_before_popup_reminder=0
-        )
-        return new_event
-
-    def is_off(self, event):
-
-        day = self.detail.get(event.summary)
-        return day.is_off
 
 
 def calculate_dates(year: int, month: int):

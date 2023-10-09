@@ -5,7 +5,7 @@ Test date usage
 import unittest
 from datetime import time
 
-from app import WorkDay
+from .workdays import WorkDay
 
 
 class TestEventUsage(unittest.TestCase):
