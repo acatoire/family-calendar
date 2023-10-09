@@ -20,7 +20,7 @@ import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
 
-from workdays.workdays import WorkDay, WorkDays
+from workdays.workdays import WorkDay, WorkDays   # ???, pylint: disable=import-error
 
 try:
     from client_secret_local import keyfile_dict_local
@@ -29,7 +29,7 @@ except ModuleNotFoundError:
     print("No local secrets found.")
 
 try:
-    from client_secret_env import keyfile_dict_env
+    from client_secret_env import keyfile_dict_env  # facultative file, pylint: disable=import-error
     print("Found ENV secrets.")
 except AttributeError:
     print("No ENV secrets found.")
@@ -107,7 +107,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
         # TODO #4 spread sheet is user dependent
         # Get the database (spreadsheet)
-        self.sheet_obj = self._gspread_client.open(year).get_worksheet(0)
+        self.sheet_obj = self._gspread_client.open(f"CHU_{year}").worksheet(self.looked_user)
 
         # TODO #5 validate spreadsheet format/content
         self._search_calendar_id()
@@ -138,6 +138,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         # TODO #6 Delete only needed ones
         start_month, end_month, end_year = calculate_dates(year, month)
         print(f"The app will delete events from 01/{start_month}/{year} to 01/{end_month}/{end_year}")
+        print(f"In calendar: {self.calendar_id} for user: {self.looked_user}")
 
         event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
                                                time_max=datetime(end_year, end_month, 1))
@@ -250,6 +251,7 @@ def add_events(event_1: Event, event_2: Event):
         return new_event
 
     raise NotImplementedError("You can't add days that are not day off together.")
+
 
 def calculate_dates(year: int, month: int):
     end_year = year
