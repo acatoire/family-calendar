@@ -135,7 +135,8 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
-        # TODO #6 Delete only needed ones
+        # TODO #17 Add the possibility to delete only starting on current month.
+        # TODO #6 Delete only needed ones.
         start_month, end_month, end_year = calculate_dates(year, month)
         print(f"The app will delete events from 01/{start_month}/{year} to 01/{end_month}/{end_year}")
         print(f"In calendar: {self.calendar_id} for user: {self.looked_user}")
