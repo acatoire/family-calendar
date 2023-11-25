@@ -1,46 +1,19 @@
-name: Calendar update
+name: Calendar Aurore update
 
 on:
-  # Controls when the action will run.
-  # Workflow runs when manually triggered using the UI or API
-  workflow_dispatch:
+  schedule:
+  - cron: "0 0 * * *" # At the end of every day
+
+  workflow_dispatch:  # workflow_dispatch = can be triggered manually
     # Inputs the workflow accepts.
     inputs:
       YEAR_REQUEST:
         description: 'Requested year'
         default: '2023'
         required: true
-      MONTH_REQUEST:
-        description: 'Used month, 0 for all year'
-        default: '0'
-        required: true
-        type: choice
-        options:
-        - 0
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
-        - 7
-        - 8
-        - 9
-        - 10
-        - 11
-        - 12
-      USER_REQUEST:
-        description: 'User to update'
-        default: 'Aurélie'
-        required: true
-        type: choice
-        options:
-        - Axel
-        - Aurélie
-        - Aurore
 
 jobs:
-  runner:
+  runner_aurore:
     runs-on: ubuntu-latest
     steps:
 
@@ -66,6 +39,4 @@ jobs:
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
         run: |
-          python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
-          ${{ github.event.inputs.MONTH_REQUEST }} \
-          ${{ github.event.inputs.USER_REQUEST }}
+          python app.py ${{ github.event.inputs.YEAR_REQUEST }} "0" "Aurore"
