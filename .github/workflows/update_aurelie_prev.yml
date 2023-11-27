@@ -1,4 +1,4 @@
-name: Calendar Aurélie update
+name: Calendar Aurélie update previous year
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -11,11 +11,11 @@ on:
     inputs:
       YEAR_REQUEST:
         description: 'Requested year'
-        default: '2024'
+        default: '2023'
         required: true
 
 jobs:
-  runner_aurelie:
+  runner_aurelie_prev:
     runs-on: ubuntu-latest
     steps:
 

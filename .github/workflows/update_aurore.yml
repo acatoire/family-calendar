@@ -9,7 +9,7 @@ on:
     inputs:
       YEAR_REQUEST:
         description: 'Requested year'
-        default: '2023'
+        default: '2024'
         required: true
 
 jobs:
