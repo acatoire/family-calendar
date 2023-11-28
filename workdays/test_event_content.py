@@ -9,7 +9,14 @@ from .workdays import WorkDay
 
 
 class TestEventUsage(unittest.TestCase):
+    """
+    This class tests the creatiuon of events in the WorkDay class.
+    """
     def test_event_creation(self):
+        """
+        This method tests the creation of an event in the WorkDay class.
+        It checks if the start time, end time, comment, off status, and color of the event are correctly set.
+        """
 
         test_day = WorkDay(start=time(1),
                            end=time(10),
