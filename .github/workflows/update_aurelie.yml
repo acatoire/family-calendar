@@ -41,5 +41,5 @@ jobs:
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
         run: |
-          year=${{github.event.inputs.YEAR_REQUEST:-2024}}
+          year=2024
           python app.py ${year} "0" "Aurélie"
