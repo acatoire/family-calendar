@@ -9,9 +9,9 @@
 | test\_date\_usage.py             |       22 |        0 |        0 |        0 |    100% |           |
 | workdays/\_\_init\_\_.py         |        0 |        0 |        0 |        0 |    100% |           |
 | workdays/test\_event\_content.py |       11 |        0 |        0 |        0 |    100% |           |
-| workdays/test\_event\_manager.py |       26 |        0 |        0 |        0 |    100% |           |
-| workdays/workdays.py             |       29 |        5 |        6 |        2 |     80% |52, 66-67, 87-88 |
-|                        **TOTAL** |  **267** |  **138** |   **46** |    **2** | **44%** |           |
+| workdays/test\_event\_manager.py |       43 |        0 |        2 |        0 |    100% |           |
+| workdays/workdays.py             |       29 |        2 |        6 |        0 |     94% |     87-88 |
+|                        **TOTAL** |  **284** |  **135** |   **48** |    **0** | **48%** |           |
 
 
 ## Setup coverage badge
