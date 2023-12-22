@@ -44,7 +44,6 @@ chu_days_types = {
     "Mc": WorkDay(time(6, 45), time(14, 15), "Mc-Matin changeable", color=1),
     "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
     "Sc": WorkDay(time(13, 45), time(21, 15), "Sc-Soir changeable", color=5),
-    "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
     "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=8),
     "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=8),
     "TA": WorkDay(None, None, "TA-Repo rtt ?", is_off=True, color=10),
@@ -57,7 +56,10 @@ chu_days_types = {
     "": WorkDay(None, None, "Not specified", is_off=True, color=10),
     "OFF": WorkDay(None, None, "OFF-Multi day off", is_off=True, color=10),
     "EM": WorkDay(None, None, "OFF-Enfant Malade", is_off=True, color=10),
-    "AM": WorkDay(None, None, "OFF-Arret Maladie", is_off=True, color=10)}
+    "AM": WorkDay(21, None, "OFF-Arret Maladie", is_off=True, color=10),
+    "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
+    "Nca": WorkDay(time(21, 0), time(7, 0), "Nca-Nuit sur Ca de N", color=8),
+}
 
 
 class Service:  # pylint: disable=too-many-instance-attributes
