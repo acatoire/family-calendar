@@ -2,13 +2,16 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/acatoire/family-calendar/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                    |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
-|------------------------ | -------: | -------: | -------: | -------: | ------: | --------: |
-| app.py                  |      193 |      140 |       46 |        1 |     24% |25, 32-33, 46-98, 101->100, 102, 105-123, 126-130, 135-154, 161-172, 179-194, 199-215, 267-294, 298-299, 319-320, 325-364 |
-| client\_secret\_env.py  |        3 |        0 |        0 |        0 |    100% |           |
-| test\_date\_usage.py    |       22 |        0 |        0 |        0 |    100% |           |
-| test\_event\_content.py |       11 |        0 |        0 |        0 |    100% |           |
-|               **TOTAL** |  **229** |  **140** |   **46** |    **1** | **34%** |           |
+| Name                             |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
+|--------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
+| app.py                           |      176 |      133 |       40 |        0 |     22% |27, 34-35, 71-125, 129-134, 137-157, 160-164, 169-188, 195-208, 215-231, 236-252, 274-275, 280-324 |
+| client\_secret\_env.py           |        3 |        0 |        0 |        0 |    100% |           |
+| test\_date\_usage.py             |       22 |        0 |        0 |        0 |    100% |           |
+| workdays/\_\_init\_\_.py         |        0 |        0 |        0 |        0 |    100% |           |
+| workdays/test\_event\_content.py |       11 |        0 |        0 |        0 |    100% |           |
+| workdays/test\_event\_manager.py |       26 |        0 |        0 |        0 |    100% |           |
+| workdays/workdays.py             |       29 |        5 |        6 |        2 |     80% |52, 66-67, 87-88 |
+|                        **TOTAL** |  **267** |  **138** |   **46** |    **2** | **44%** |           |
 
 
 ## Setup coverage badge
