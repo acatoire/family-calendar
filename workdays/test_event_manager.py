@@ -21,7 +21,7 @@ class TestEventUsage(unittest.TestCase):
                             color=3),
         "T4-full": WorkDay(None, None,
                            "Test 4 full day event",
-                           color=4)
+                           is_off=True, color=4)
     }
 
     def test_event_convert_one_day(self):
@@ -41,6 +41,7 @@ class TestEventUsage(unittest.TestCase):
         self.assertEqual(1, test_event.color_id)
         self.assertEqual(28, test_event.start.day)
         self.assertEqual(28, test_event.end.day)
+        self.assertEqual(False, day_manager.is_off(test_event))
 
     def test_event_convert_one_full_day(self):
         """
@@ -59,6 +60,7 @@ class TestEventUsage(unittest.TestCase):
         self.assertEqual(4, test_event.color_id)
         self.assertEqual(28, test_event.start.day)
         self.assertEqual(28, test_event.end.day)
+        self.assertEqual(True, day_manager.is_off(test_event))
 
     def test_event_convert_dual_day(self):
         """
