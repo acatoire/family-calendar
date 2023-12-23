@@ -2,16 +2,19 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/acatoire/family-calendar/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                             |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
-|--------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
-| app.py                           |      176 |      133 |       40 |        0 |     22% |27, 34-35, 73-127, 131-136, 139-159, 162-166, 171-190, 197-210, 217-233, 238-254, 276-277, 282-326 |
-| client\_secret\_env.py           |        3 |        0 |        0 |        0 |    100% |           |
-| test\_date\_usage.py             |       22 |        0 |        0 |        0 |    100% |           |
-| workdays/\_\_init\_\_.py         |        0 |        0 |        0 |        0 |    100% |           |
-| workdays/test\_event\_content.py |       11 |        0 |        0 |        0 |    100% |           |
-| workdays/test\_event\_manager.py |       45 |        0 |        2 |        0 |    100% |           |
-| workdays/workdays.py             |       29 |        0 |        6 |        0 |    100% |           |
-|                        **TOTAL** |  **286** |  **133** |   **48** |    **0** | **49%** |           |
+| Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
+|--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
+| calendar\_service/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
+| calendar\_service/calendar\_service.py |      145 |      106 |       34 |        0 |     24% |21, 28-29, 40-94, 98-103, 106-126, 129-133, 138-157, 164-177, 184-200, 220-236 |
+| calendar\_service/test\_date\_usage.py |       22 |        0 |        0 |        0 |    100% |           |
+| client\_secret\_env.py                 |        3 |        0 |        0 |        0 |    100% |           |
+| days\_types/\_\_init\_\_.py            |        0 |        0 |        0 |        0 |    100% |           |
+| days\_types/chu\_nantes.py             |        3 |        0 |        0 |        0 |    100% |           |
+| workdays/\_\_init\_\_.py               |        0 |        0 |        0 |        0 |    100% |           |
+| workdays/test\_event\_content.py       |       11 |        0 |        0 |        0 |    100% |           |
+| workdays/test\_event\_manager.py       |       45 |        0 |        2 |        0 |    100% |           |
+| workdays/workdays.py                   |       29 |        0 |        6 |        0 |    100% |           |
+|                              **TOTAL** |  **258** |  **106** |   **42** |    **0** | **55%** |           |
 
 
 ## Setup coverage badge
