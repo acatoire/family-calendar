@@ -28,6 +28,7 @@ try:
 except AttributeError:
     print("No ENV secrets found.")
 
+
 class Service:  # pylint: disable=too-many-instance-attributes
     def __init__(self, year: str, month: int, user: str):
         """
@@ -105,7 +106,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         print("Delete old events")
         # TODO #17 Add the possibility to delete only starting on current month.
         # TODO #6 Delete only needed ones.
-        start_month, end_month, end_year = self.calculate_dates(year, month)
+        start_month, end_month, end_year = calculate_dates(year, month)
         print(f"The app will delete events from 01/{start_month}/{year} to 01/{end_month}/{end_year}")
         print(f"In calendar: {self.calendar_id} for user: {self.looked_user}")
 
@@ -137,7 +138,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         i = 0
         while (i < len(self.event_list)) and (i < len(self.event_list) - 1):
             if self.work_days.is_off(self.event_list[i]) and self.work_days.is_off(self.event_list[i + 1]):
-                self.event_list[i] = self.add_events(self.event_list[i], self.event_list.pop(i + 1))
+                self.event_list[i] = add_events(self.event_list[i], self.event_list.pop(i + 1))
             else:
                 i += 1
 
@@ -198,41 +199,40 @@ class Service:  # pylint: disable=too-many-instance-attributes
                     new_event = self.work_days.get_event(element_date, element.get(self.looked_user))
                     self.event_list.append(new_event)
 
-    @staticmethod
-    def calculate_dates(year: int, month: int):
-        end_year = year
-        if month:
-            start_month = month
-            if month == 12:
-                end_month = 1
-                end_year = year + 1
-            else:
-                end_month = month + 1
-        else:
-            start_month = 1
+def calculate_dates(year: int, month: int):
+    end_year = year
+    if month:
+        start_month = month
+        if month == 12:
             end_month = 1
             end_year = year + 1
-        return start_month, end_month, end_year
+        else:
+            end_month = month + 1
+    else:
+        start_month = 1
+        end_month = 1
+        end_year = year + 1
+    return start_month, end_month, end_year
 
-    @staticmethod
-    def add_events(event_1: Event, event_2: Event):
 
-        work_days = WorkDays(chu_days_types)
-        new_event = copy(event_1)
+def add_events(event_1: Event, event_2: Event):
 
-        if work_days.is_off(event_1) and work_days.is_off(event_2):
+    work_days = WorkDays(chu_days_types)
+    new_event = copy(event_1)
 
-            if event_1.summary == "OFF":
-                # Already a merged day
-                new_event.description = f"{event_1.description}\n{event_2.start}-{event_2.description}"
-            else:
-                # First merge
-                new_event.summary = "OFF"
-                new_event.description = f"{event_1.start}-{event_1.description}\n{event_2.start}-{event_2.description}"
-            new_event.start = event_1.start
-            new_event.end = event_2.end + timedelta(days=1)
-            new_event.color_id = event_1.color_id
+    if work_days.is_off(event_1) and work_days.is_off(event_2):
 
-            return new_event
+        if event_1.summary == "OFF":
+            # Already a merged day
+            new_event.description = f"{event_1.description}\n{event_2.start}-{event_2.description}"
+        else:
+            # First merge
+            new_event.summary = "OFF"
+            new_event.description = f"{event_1.start}-{event_1.description}\n{event_2.start}-{event_2.description}"
+        new_event.start = event_1.start
+        new_event.end = event_2.end + timedelta(days=1)
+        new_event.color_id = event_1.color_id
 
-        raise NotImplementedError("You can't add days that are not day off together.")
+        return new_event
+
+    raise NotImplementedError("You can't add days that are not day off together.")

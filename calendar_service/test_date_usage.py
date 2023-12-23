@@ -4,7 +4,7 @@ Test date usage
 
 import unittest
 
-from app import calculate_dates
+from .calendar_service import calculate_dates
 
 
 class TestDateUsage(unittest.TestCase):
