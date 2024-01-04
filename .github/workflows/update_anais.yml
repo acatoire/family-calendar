@@ -1,7 +1,5 @@
-name: Calendar Aurélie update previous year
+name: Calendar Aurore update
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   schedule:
   - cron: "0 0 * * *" # At the end of every day
@@ -11,11 +9,11 @@ on:
     inputs:
       YEAR_REQUEST:
         description: 'Requested year'
-        default: '2023'
+        default: '2024'
         required: true
 
 jobs:
-  runner_aurelie_prev:
+  runner_aurore:
     runs-on: ubuntu-latest
     steps:
 
@@ -41,4 +39,4 @@ jobs:
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
         run: |
-          python app.py "2023" "0" "Aurélie"
+          python app.py "2024" "0" "Anaïs"
