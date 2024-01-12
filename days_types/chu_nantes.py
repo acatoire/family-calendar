@@ -13,6 +13,7 @@ chu_days_types = {
     "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
     "Sc": WorkDay(time(13, 45), time(21, 15), "Sc-Soir changeable", color=5),
     "J": WorkDay(time(8, 30), time(16, 30), "J-Jour", color=5),
+    "Ji": WorkDay(time(8, 30), time(16, 30), "Ji-Jour EndoscopI", color=5),
     "Jca": WorkDay(time(8, 30), time(16, 30), "Jca-Jour modifiable", color=5),
     "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=5),
     "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
