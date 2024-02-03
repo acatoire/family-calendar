@@ -1,6 +1,6 @@
 
 
-google-api-python-client
-gspread
-gcsa
+google-api-python-client<3.0.0
+gspread<6.0.0 # TODO breaking change in 6.0.0
+gcsa<3.0.0
 python-dotenv
