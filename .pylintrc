@@ -439,6 +439,8 @@ disable=fixme,
         missing-function-docstring, #  TODO #1 add all function docstring
         too-many-arguments,
         too-few-public-methods,
+        import-error, # TODO never success to have it correct
+        no-else-return, # Help to clearly show dev intention
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
