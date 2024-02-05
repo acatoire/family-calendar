@@ -10,6 +10,7 @@ https://github.com/kuzmoyev/google-calendar-simple-api
 
 from datetime import datetime
 from sys import argv
+
 from calendar_service.calendar_service import Service
 
 # TODO #2 use logging
@@ -66,7 +67,7 @@ def main():
         calendar_service.print_events()
 
     else:
-        print(f"No need to update since {calendar_service.last_update}")
+        print(f"No need to update since {calendar_service.update_info['calendar']}")
 
 
 if __name__ == '__main__':

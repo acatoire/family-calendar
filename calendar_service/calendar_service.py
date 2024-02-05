@@ -15,6 +15,8 @@ from google.oauth2 import service_account
 import gspread
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.event import Event
+
+from database import database
 from days_types.chu_nantes import chu_days_types
 from workdays.workdays import WorkDays
 
@@ -44,8 +46,6 @@ class Service:  # pylint: disable=too-many-instance-attributes
         self.calendar_id = ''
         self.work_days = WorkDays(chu_days_types)
         self.event_list = []
-
-        self.last_update = 'unknown'
 
         # Get config secrets (keyfile)
         try:
@@ -79,6 +79,13 @@ class Service:  # pylint: disable=too-many-instance-attributes
         # Get the database (spreadsheet)
         self.sheet_obj = self._gspread_client.open(f"CHU_{year}").worksheet(self.looked_user)
 
+        self.database_service = database.FirestoreDAO()
+        # TODO make thin cleaner, how to manage user ID?
+        self.user_document = self.looked_user.lower().replace('é', 'e').replace('ï', 'i')
+        self.update_info = self.database_service.get_document("update", self.user_document)
+        # TODO spreadsheet.get_lastUpdateTime is for the whole document not the user page, may be address by #4
+        self.update_info['sheet'] = self.sheet_obj.spreadsheet.get_lastUpdateTime()
+
         # TODO #5 validate spreadsheet format/content
         self._search_calendar_id()
         self.init_event_list_from_database()
@@ -96,12 +103,10 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
     def need_update(self) -> bool:
         # Check update time
-        self.last_update = self.sheet_obj.spreadsheet.get_lastUpdateTime()
-        calendar_update = "not detected"  # TODO finish later #11 to manage last edition date
-        print(f"Last database change: {self.last_update}")
-        print(f"Last calendar update: {calendar_update}")
+        print(f"Last database change: {self.update_info['sheet']}")
+        print(f"Last calendar update: {self.update_info['calendar']}")
 
-        return self.last_update != calendar_update
+        return self.update_info['sheet'] != self.update_info['calendar']
 
     def delete_events(self, year: int, month: int):
         print("Delete old events")
@@ -157,6 +162,10 @@ class Service:  # pylint: disable=too-many-instance-attributes
                     print(f"{event.start} - {event.summary}")
                     self._calendar.add_event(event)
 
+        # Save last update date in database
+        self.update_info['calendar'] = self.update_info['sheet']
+        self.database_service.update_document('update', self.user_document, self.update_info)
+
     def _search_calendar_id(self):
         """
         Initialize the calendar id from database
@@ -199,6 +208,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
                     # Update the whole year
                     new_event = self.work_days.get_event(element_date, element.get(self.looked_user))
                     self.event_list.append(new_event)
+
 
 def calculate_dates(year: int, month: int):
     end_year = year
