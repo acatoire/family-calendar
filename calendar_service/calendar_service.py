@@ -57,7 +57,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
             # decode
             self.keyfile_dict = json.loads(base64.b64decode(encoded_key).decode('utf-8'))
             print("Use ENV secrets.")
-        except NameError:
+        except TypeError:
             self.keyfile_dict = keyfile_dict_local
             print("Use Local secrets.")
             self.use_local = True

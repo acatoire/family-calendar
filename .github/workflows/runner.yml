@@ -50,7 +50,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10' # install the python version needed
+          python-version: '3.12' # install the python version needed
           
       - name: install python packages
         run: |
@@ -59,12 +59,7 @@ jobs:
           
       - name: execute py script
         env: # Or as an environment variable
-          CI_PROJECT_ID: ${{ secrets.CI_PROJECT_ID }}
-          CI_PRIVATE_KEY_ID: ${{ secrets.CI_PRIVATE_KEY_ID }}
-          CI_PRIVATE_KEY: ${{ secrets.CI_PRIVATE_KEY }}
-          CI_CLIENT_EMAIL: ${{ secrets.CI_CLIENT_EMAIL }}
-          CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
-          CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
           python app.py ${{ github.event.inputs.YEAR_REQUEST }} \
           ${{ github.event.inputs.MONTH_REQUEST }} \
