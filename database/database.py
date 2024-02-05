@@ -13,7 +13,7 @@ Example usage:
 
 import json
 import base64
-import os
+from os import getenv
 
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -33,7 +33,7 @@ class FirestoreDAO():
             # Provide credentials from base64 env variable if default one is falling
             # tutorial from:
             # https://stackoverflow.com/questions/73965176/authenticating-firebase-connection-in-github-action
-            encoded_key = os.getenv("SERVICE_ACCOUNT_KEY")
+            encoded_key = getenv("SERVICE_ACCOUNT_KEY")
             # decode
             service_account_json = json.loads(base64.b64decode(encoded_key).decode('utf-8'))
             google_creds = service_account.Credentials.from_service_account_info(service_account_json)

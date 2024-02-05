@@ -1,6 +1,6 @@
 
 
-google-api-python-client==2.116.0 # For firebase database
-gspread==6.0.0 # For google sheet management# TODO breaking change in 6.0.0
-gcsa==2.2.0 # For google calendar management
+google-api-python-client<3.0.0 # For firebase database
+gspread<6.0.0 # For google sheet management# TODO breaking change in 6.0.0
+gcsa<3.0.0 # For google calendar management
 google-cloud-firestore<3.0.0 # For database no sql management

@@ -1,10 +1,12 @@
 """
 Calendar class management
 """
-
+import base64
+import json
 import sys
 from copy import copy
 from datetime import date, datetime, timedelta
+from os import getenv
 from time import sleep
 
 from googleapiclient.errors import HttpError
@@ -21,12 +23,6 @@ try:
     print("Local secrets found.")
 except ModuleNotFoundError:
     print("No local secrets found.")
-
-try:
-    from client_secret_env import keyfile_dict_env  # facultative file, pylint: disable=import-error
-    print("Found ENV secrets.")
-except AttributeError:
-    print("No ENV secrets found.")
 
 
 class Service:  # pylint: disable=too-many-instance-attributes
@@ -54,7 +50,12 @@ class Service:  # pylint: disable=too-many-instance-attributes
         # Get config secrets (keyfile)
         try:
             # Priority to ENV secrets
-            self.keyfile_dict = keyfile_dict_env
+            # Provide credentials from base64 env variable if default one is falling
+            # tutorial from:
+            # https://stackoverflow.com/questions/73965176/authenticating-firebase-connection-in-github-action
+            encoded_key = getenv("SERVICE_ACCOUNT_KEY")
+            # decode
+            self.keyfile_dict = json.loads(base64.b64decode(encoded_key).decode('utf-8'))
             print("Use ENV secrets.")
         except NameError:
             self.keyfile_dict = keyfile_dict_local
