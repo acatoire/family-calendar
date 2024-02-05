@@ -41,6 +41,7 @@ jobs:
           CI_CLIENT_EMAIL: ${{ secrets.CI_CLIENT_EMAIL }}
           CI_CLIENT_ID: ${{ secrets.CI_CLIENT_ID }}
           CI_CLIENT_X509_CERT_URL: ${{ secrets.CI_CLIENT_X509_CERT_URL }}
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: coverage run -m unittest discover
         #run: coverage --rcfile=.coveragerc run -m unittest discover
 
