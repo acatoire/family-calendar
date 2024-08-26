@@ -10,6 +10,11 @@ The project uses:
 - The final usage is an updated Google Calendar to have the updated agenda on the use phone.
 
 
+# technical
+
+Last run update 2024/08/26
+
+
 
     
     
