@@ -12,9 +12,9 @@
 | days\_types/chu\_nantes.py             |        3 |        0 |        0 |        0 |    100% |           |
 | workdays/\_\_init\_\_.py               |        0 |        0 |        0 |        0 |    100% |           |
 | workdays/test\_event\_content.py       |       11 |        0 |        0 |        0 |    100% |           |
-| workdays/test\_event\_manager.py       |       45 |        0 |        2 |        0 |    100% |           |
+| workdays/test\_event\_manager.py       |       45 |        0 |        0 |        0 |    100% |           |
 | workdays/workdays.py                   |       29 |        0 |        6 |        0 |    100% |           |
-|                              **TOTAL** |  **257** |  **106** |   **42** |    **0** | **55%** |           |
+|                              **TOTAL** |  **257** |  **106** |   **40** |    **0** | **54%** |           |
 
 
 ## Setup coverage badge
