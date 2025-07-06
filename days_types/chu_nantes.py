@@ -18,6 +18,7 @@ chu_days_types = {
     "Jrp": WorkDay(time(8, 30), time(16, 30), "Jrp-Jour modifiable", color=5),
     "N": WorkDay(time(21, 0), time(7, 0), "N-Nuit", color=11),
     "Nca": WorkDay(time(21, 0), time(7, 0), "Nca-Nuit sur Ca de N", color=11),
+    "TP": WorkDay(None, None, "Temps Partiel", is_off=True, color=10),
     "TA": WorkDay(None, None, "TA-Repo rtt ?", is_off=True, color=10),
     "To": WorkDay(None, None, "To-Repo recup ?", is_off=True, color=10),
     "RF": WorkDay(None, None, "RF-Repo récupération férier", is_off=True, color=10),

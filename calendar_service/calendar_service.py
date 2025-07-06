@@ -30,12 +30,15 @@ except AttributeError:
 
 
 class Service:  # pylint: disable=too-many-instance-attributes
-    def __init__(self, year: str, month: int, user: str):
+    def __init__(self,
+                 year: str,
+                 month: int,
+                 user: str):
         """
 
         :param year:
         :param month: The month to read or 0 for the full year
-        :param user: THe user to read
+        :param user: The user to read
         """
         self.use_local = False
         self.keyfile_dict = None
