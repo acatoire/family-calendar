@@ -5,7 +5,7 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | calendar\_service/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
-| calendar\_service/calendar\_service.py |      145 |      106 |       34 |        0 |     24% |21, 28-29, 40-94, 98-103, 106-126, 129-133, 138-157, 164-177, 184-200, 220-236 |
+| calendar\_service/calendar\_service.py |      145 |      106 |       34 |        0 |     24% |21, 28-29, 43-97, 101-106, 109-129, 132-136, 141-160, 167-180, 187-203, 223-239 |
 | calendar\_service/test\_date\_usage.py |       22 |        0 |        0 |        0 |    100% |           |
 | client\_secret\_env.py                 |        2 |        0 |        0 |        0 |    100% |           |
 | days\_types/\_\_init\_\_.py            |        0 |        0 |        0 |        0 |    100% |           |
