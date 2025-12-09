@@ -50,7 +50,8 @@ class WorkDays:
         day = self.type_details.get(day_type)
         if day is None:
             raise ValueError(
-                f"""The day type "{day_type}" is not known in the application. Edit the WorkDays.detail dict.""")
+                f"""The day type "{day_type}" is not known in the application.
+                 Edit the days_types/chu_nantes.py file to add it.""")
 
         # Create single or dual day event
         if day.start and day.end:

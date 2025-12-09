@@ -49,11 +49,6 @@ def main():
                                month,
                                user)
 
-    # For debug
-    # print("Colors?")
-    # colors = my.calendar.list_event_colors()
-    # print(colors)
-
     if calendar_service.need_update():
 
         wait_before_continue(calendar_service.use_local)
