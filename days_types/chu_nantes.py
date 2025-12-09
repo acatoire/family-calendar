@@ -1,6 +1,8 @@
 """
 Day types definition
 To convert data to calendar events
+Colors are defined in
+https://google-calendar-simple-api.readthedocs.io/en/latest/colors.html?utm_source=chatgpt.com#list-event-colors
 """
 from datetime import time
 
@@ -25,7 +27,7 @@ chu_days_types = {
     "JU": WorkDay(time(7, 15), time(19, 15), "Jour Continue", color=5),
     "M": WorkDay(time(6, 45), time(14, 15), "Matin", color=5),
     "Mc": WorkDay(time(6, 45), time(14, 15), "Matin continue", color=5),
-    "MP": WorkDay(time(7, 15), time(15, 15), "Matin Pansement", color=5),
+    "Mp": WorkDay(time(7, 15), time(15, 15), "Matin Pansement", color=5),
     "N": WorkDay(time(21, 0), time(7, 0), "Nuit", color=11),
     "N12": WorkDay(time(19, 15), time(7, 15), "Nuit 12h", color=11),
     "N12A": WorkDay(time(19, 15), time(7, 15), "Nuit 12h sur Abs", color=11),
