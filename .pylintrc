@@ -285,7 +285,7 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=6
+max-args=5
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7
@@ -435,6 +435,7 @@ disable=fixme,
         missing-function-docstring, #  TODO #1 add all function docstring
         too-many-arguments,
         too-few-public-methods,
+        too-many-positional-arguments,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
