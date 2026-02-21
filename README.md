@@ -14,7 +14,7 @@
 | workdays/test\_event\_content.py       |       11 |        0 |        0 |        0 |    100% |           |
 | workdays/test\_event\_manager.py       |       45 |        0 |        0 |        0 |    100% |           |
 | workdays/workdays.py                   |       29 |        0 |        6 |        0 |    100% |           |
-|                              **TOTAL** |  **257** |  **106** |   **40** |    **0** | **54%** |           |
+| **TOTAL**                              |  **257** |  **106** |   **40** |    **0** | **54%** |           |
 
 
 ## Setup coverage badge
