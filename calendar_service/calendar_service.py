@@ -124,7 +124,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
                     except HttpError:
                         # Manage 403 error: Rate limit exceeded
                         print("Http error, wait before retry")
-                        sleep(5)
+                        sleep(10)
                         print(f"Delete : {event}")
                         self._calendar.delete_event(event)
 
