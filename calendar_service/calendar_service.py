@@ -47,6 +47,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
         self._gspread_client = None
 
         self.looked_month = month
+        self.year = int(year)
         self.looked_user = user
         self.calendar_id = ''
         self.work_days = WorkDays(chu_days_types)
@@ -115,7 +116,12 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
         event_list = self._calendar.get_events(time_min=datetime(year, start_month, 1),
                                                time_max=datetime(end_year, end_month, 1))
+        window_start = date(year, start_month, 1)
         for event in event_list:
+            event_start = event.start.date() if isinstance(event.start, datetime) else event.start
+            if event_start < window_start:
+                # Overlapping event starting in the previous period (e.g. night shift on 31/12): keep it
+                continue
             if event.creator:
                 if event.creator.email == self.keyfile_dict.get('client_email'):
                     try:
@@ -195,6 +201,10 @@ class Service:  # pylint: disable=too-many-instance-attributes
 
             if element.get("Date") != "":  # Event line has a non empty date column value.
                 element_date = date.fromisoformat(element.get("Date").replace("/", "-"))
+
+                if element_date.year != self.year:
+                    print(f"WARNING: skip {element_date}, not in year {self.year} of the spreadsheet")
+                    continue
 
                 if self.looked_month:
                     # Update only month
