@@ -171,9 +171,13 @@ class Service:  # pylint: disable=too-many-instance-attributes
         for element in sheet_dict:
             if element.get('Type') == 'Calendar':
                 # Get the calendar id
-                self.calendar_id = element.get(self.looked_user)
+                self.calendar_id = str(element.get(self.looked_user) or "")
                 # Clean return char from data
-                self.calendar_id = self.calendar_id.replace("\r", "").replace("\n", "")
+                self.calendar_id = self.calendar_id.replace("\r", "").replace("\n", "").strip()
+                if not self.calendar_id:
+                    raise ValueError(
+                        f"Calendar id is empty for user {self.looked_user} in the 'Calendar' row of the "
+                        f"spreadsheet. Fill it in (e.g. for a new year's sheet).")
                 return  # calendar found, done!
 
         # calendar not found, raise!
