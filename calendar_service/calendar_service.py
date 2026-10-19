@@ -2,6 +2,7 @@
 Calendar class management
 """
 
+import base64
 import sys
 from copy import copy
 from datetime import date, datetime, timedelta
@@ -180,6 +181,7 @@ class Service:  # pylint: disable=too-many-instance-attributes
                 self.calendar_id = str(element.get(self.looked_user) or "")
                 # Clean return char from data
                 self.calendar_id = self.calendar_id.replace("\r", "").replace("\n", "").strip()
+                self.calendar_id = decode_calendar_id(self.calendar_id)
                 if not self.calendar_id:
                     raise ValueError(
                         f"Calendar id is empty for user {self.looked_user} in the 'Calendar' row of the "
@@ -215,6 +217,21 @@ class Service:  # pylint: disable=too-many-instance-attributes
                     # Update the whole year
                     new_event = self.work_days.get_event(element_date, element.get(self.looked_user))
                     self.event_list.append(new_event)
+
+def decode_calendar_id(calendar_id: str) -> str:
+    """
+    Google share links (cid=...) give the calendar id base64 encoded.
+    A real calendar id always contains '@', so decode only when it does not.
+    """
+    if not calendar_id or "@" in calendar_id:
+        return calendar_id
+    try:
+        padded = calendar_id + "=" * (-len(calendar_id) % 4)
+        decoded = base64.urlsafe_b64decode(padded).decode("utf-8")
+    except (ValueError, UnicodeDecodeError):
+        return calendar_id
+    return decoded if "@" in decoded else calendar_id
+
 
 def calculate_dates(year: int, month: int):
     end_year = year
