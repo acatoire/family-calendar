@@ -1,8 +1,10 @@
-name: Calendar Melyssa update
+name: Calendar Axel update
 
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
 on:
-  # schedule:
-  #   - cron: "0 0 * * *" # At the end of every day
+  schedule:
+    - cron: "0 0 * * *" # At the end of every day
 
   workflow_dispatch: # workflow_dispatch = can be triggered manually
     # Inputs the workflow accepts.
@@ -13,7 +15,7 @@ on:
         required: true
 
 jobs:
-  runner_melyssa:
+  runner_axel:
     runs-on: ubuntu-latest
     steps:
 
@@ -43,4 +45,4 @@ jobs:
           if [ -z "$YEAR" ]; then
             YEAR=$(date +%Y)
           fi
-          python app.py "$YEAR" "0" "Melyssa"
+          python app.py "$YEAR" "0" "Axel"
