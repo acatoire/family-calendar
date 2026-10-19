@@ -5,7 +5,7 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | calendar\_service/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
-| calendar\_service/calendar\_service.py |      155 |      116 |       40 |        0 |     22% |21, 28-29, 43-98, 102-107, 110-135, 138-142, 147-166, 173-190, 197-217, 237-253 |
+| calendar\_service/calendar\_service.py |      166 |      125 |       42 |        0 |     22% |22, 29-30, 44-99, 103-108, 111-136, 139-143, 148-167, 174-192, 199-219, 226-233, 254-270 |
 | calendar\_service/test\_date\_usage.py |       22 |        0 |        0 |        0 |    100% |           |
 | client\_secret\_env.py                 |        2 |        0 |        0 |        0 |    100% |           |
 | days\_types/\_\_init\_\_.py            |        0 |        0 |        0 |        0 |    100% |           |
@@ -14,7 +14,7 @@
 | workdays/test\_event\_content.py       |       11 |        0 |        0 |        0 |    100% |           |
 | workdays/test\_event\_manager.py       |       45 |        0 |        0 |        0 |    100% |           |
 | workdays/workdays.py                   |       29 |        0 |        6 |        0 |    100% |           |
-| **TOTAL**                              |  **267** |  **116** |   **46** |    **0** | **51%** |           |
+| **TOTAL**                              |  **278** |  **125** |   **48** |    **0** | **50%** |           |
 
 
 ## Setup coverage badge
