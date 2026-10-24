@@ -30,6 +30,9 @@ except AttributeError:
     print("No ENV secrets found.")
 
 
+MAX_OFF_DAYS = 30
+
+
 class Service:  # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  year: str,
@@ -265,6 +268,10 @@ def add_events(event_1: Event, event_2: Event):
             new_event.description = f"{event_1.start}-{event_1.description}\n{event_2.start}-{event_2.description}"
         new_event.start = event_1.start
         new_event.end = event_2.end + timedelta(days=1)
+        # Keep only the last MAX_OFF_DAYS days of a long off zone
+        earliest_start = new_event.end - timedelta(days=MAX_OFF_DAYS)
+        if new_event.start < earliest_start:
+            new_event.start = earliest_start
         new_event.color_id = event_1.color_id
 
         return new_event
