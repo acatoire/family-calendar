@@ -39,6 +39,7 @@ chu_days_types = {
     "NU": WorkDay(time(19, 15), time(7, 15), "Nuit Continue", color=11),
     "OFF": WorkDay(None, None, "Multi day off", is_off=True, color=10),
     "RF": WorkDay(None, None, "Repos récupération férier", is_off=True, color=10),
+    "F": WorkDay(None, None, "Férier", is_off=True, color=10),
     "Rc": WorkDay(None, None, "Repos Récupération", is_off=True, color=10),
     "S": WorkDay(time(13, 45), time(21, 15), "S-Soir", color=5),
     "Sc": WorkDay(time(13, 45), time(21, 15), "Soir continue", color=5),
