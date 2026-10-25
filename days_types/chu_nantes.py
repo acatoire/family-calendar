@@ -12,7 +12,7 @@ from workdays.workdays import WorkDay
 chu_days_types = {
     "": WorkDay(None, None, "Not specified", is_off=True, color=10),
     ".CA": WorkDay(None, None, "Congé Annuel ?", is_off=True, color=10),
-    "AM": WorkDay(21, None, "Arret Maladie", is_off=True, color=10),
+    "AM": WorkDay(21, None, "Arrêt Maladie", is_off=True, color=10),
     "CA": WorkDay(None, None, "Congé Annuel", is_off=True, color=10),
     "EM": WorkDay(None, None, "Enfant Malade", is_off=True, color=10),
     "J": WorkDay(time(8, 30), time(16, 30), "Jour", color=5),
@@ -29,6 +29,8 @@ chu_days_types = {
     "Mc": WorkDay(time(6, 45), time(14, 15), "Matin continue", color=5),
     "Mp": WorkDay(time(7, 15), time(15, 15), "Matin Pansement", color=5),
     "Mythic": WorkDay(time(9, 0), time(18, 0), "Jour chez Mythic", color=7),
+    "Archichouette A": WorkDay(time(14, 0), time(18, 0), "Archichouette Aprés midi", color=2),
+    "Archichouette S": WorkDay(time(18, 0), time(23, 0), "Archichouette Soirée", color=2),
     "N": WorkDay(time(21, 0), time(7, 0), "Nuit", color=11),
     "N12": WorkDay(time(19, 15), time(7, 15), "Nuit 12h", color=11),
     "N12A": WorkDay(time(19, 15), time(7, 15), "Nuit 12h sur Abs", color=11),
